@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Career Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Progress Bar Animations */
+        .stat-bar { transition: width 1s ease-in-out; }
+
+        /* Screen Transitions */
+        .screen { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .screen.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active { background-color: #3b82f6; color: white; }
+        .nav-item:hover:not(.active) { background-color: #1e293b; }
+
+        /* Loader */
+        .loader {
+            border: 4px solid #1e293b;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden selection:bg-blue-500 selection:text-white">
+
+    <!-- START SCREEN -->
+    <div id="screen-start" class="screen active w-full h-full flex flex-col items-center justify-center bg-[url('https://images.unsplash.com/photo-1518605368461-1ee7ce3f95e2?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
+        <div class="absolute inset-0 bg-slate-900/80"></div>
+        <div class="relative z-10 text-center glass-panel p-12 rounded-2xl shadow-2xl max-w-lg w-full">
+            <i class="fa-solid fa-futbol text-6xl text-blue-500 mb-6"></i>
+            <h1 class="text-4xl font-black mb-2 tracking-tight">CAREER<span class="text-blue-500">SIM</span></h1>
+            <p class="text-slate-400 mb-8">The Ultimate Football Player Journey</p>
+            
+            <button id="btn-new-game" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl mb-4 transition shadow-lg shadow-blue-500/30">
+                <i class="fa-solid fa-plus mr-2"></i> Start New Career
+            </button>
+            <button id="btn-continue" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-xl transition hidden">
+                <i class="fa-solid fa-play mr-2"></i> Continue Career
+            </button>
+        </div>
+    </div>
+
+    <!-- CREATE PLAYER SCREEN -->
+    <div id="screen-create" class="screen w-full h-full bg-slate-900 overflow-y-auto">
+        <div class="max-w-3xl mx-auto py-12 px-6">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold">Create Your Legend</h2>
+                <p class="text-slate-400">Define your origins. You will start as a 15-year-old academy prospect.</p>
+            </div>
+
+            <div class="glass-panel p-8 rounded-2xl">
+                <form id="create-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">First Name</label>
+                            <input type="text" id="cp-fname" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition" placeholder="e.g. Lionel">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Last Name</label>
+                            <input type="text" id="cp-lname" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition" placeholder="e.g. Messi">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Nationality</label>
+                            <select id="cp-nation" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                                <option value="England">England</option>
+                                <option value="Spain">Spain</option>
+                                <option value="France">France</option>
+                                <option value="Germany">Germany</option>
+                                <option value="Italy">Italy</option>
+                                <option value="Brazil">Brazil</option>
+                                <option value="Argentina">Argentina</option>
+                                <option value="Portugal">Portugal</option>
+                                <option value="Netherlands">Netherlands</option>
+                                <option value="India">India</option>
+                                <option value="USA">USA</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">Preferred Foot</label>
+                            <select id="cp-foot" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                                <option value="Right">Right</option>
+                                <option value="Left">Left</option>
+                                <option value="Both">Both (Rare)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Starting Academy</label>
+                        <select id="cp-academy" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                            <!-- JS will populate options here -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Position</label>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="position-selector">
+                            <!-- JS will populate buttons here -->
+                        </div>
+                        <input type="hidden" id="cp-pos" value="ST" required>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-700">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-blue-500/30 text-lg">
+                            Begin Career
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD LAYOUT -->
+    <div id="main-layout" class="hidden w-full h-full flex">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col hidden md:flex shrink-0">
+            <div class="p-6 text-center border-b border-slate-800">
+                <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto flex items-center justify-center text-3xl font-black mb-3 shadow-lg" id="sb-avatar">LM</div>
+                <h3 class="font-bold text-lg leading-tight" id="sb-name">Player Name</h3>
+                <p class="text-blue-400 text-sm font-medium" id="sb-ovr">OVR: 75 | <span id="sb-pos">ST</span></p>
+            </div>
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+                <button class="nav-item active w-full flex items-center px-4 py-3 text-slate-300 rounded-lg transition" data-target="dashboard">
+                    <i class="fa-solid fa-house w-6"></i> Dashboard
+                </button>
+                <button class="nav-item w-full flex items-center px-4 py-3 text-slate-300 rounded-lg transition" data-target="profile">
+                    <i class="fa-solid fa-user w-6"></i> Player Profile
+                </button>
+                <button class="nav-item w-full flex items-center px-4 py-3 text-slate-300 rounded-lg transition" data-target="club">
+                    <i class="fa-solid fa-shield-halved w-6"></i> My Club
+                </button>
+                <button class="nav-item w-full flex items-center px-4 py-3 text-slate-300 rounded-lg transition relative" data-target="transfers">
+                    <i class="fa-solid fa-handshake w-6"></i> Transfers
+                    <span id="transfer-badge" class="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full hidden"></span>
+                </button>
+                <button class="nav-item w-full flex items-center px-4 py-3 text-slate-300 rounded-lg transition" data-target="history">
+                    <i class="fa-solid fa-chart-line w-6"></i> Career History
+                </button>
+                <button class="nav-item w-full flex items-center px-4 py-3 text-slate-300 rounded-lg transition" data-target="trophies">
+                    <i class="fa-solid fa-trophy w-6"></i> Trophies
+                </button>
+            </nav>
+            <div class="p-4 border-t border-slate-800">
+                <p class="text-xs text-slate-500 mb-3 text-center" id="sb-season-year">Season 2024/25</p>
+                <button id="btn-simulate" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-blue-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-forward-step mr-2"></i> Simulate Season
+                </button>
+                <button id="btn-retire-early" class="w-full bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white font-bold py-2 rounded-lg transition border border-red-800/50 mt-2 text-sm flex items-center justify-center">
+                    <i class="fa-solid fa-power-off mr-2"></i> Retire
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Header (Visible only on small screens) -->
+        <div class="md:hidden fixed top-0 left-0 w-full bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center z-50">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center font-bold text-sm" id="mob-avatar">LM</div>
+                <div>
+                    <h3 class="font-bold text-sm" id="mob-name">Player Name</h3>
+                    <p class="text-blue-400 text-xs" id="mob-ovr">OVR: 75 | ST</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="mob-retire" class="bg-red-900/50 text-red-400 p-2 rounded text-sm font-bold border border-red-800"><i class="fa-solid fa-power-off"></i></button>
+                <button id="mob-simulate" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold">Simulate</button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 bg-slate-950 overflow-y-auto relative p-4 md:p-8 pt-20 md:pt-8" id="content-area">
+            
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="view-section block">
+                <h2 class="text-2xl font-bold mb-6">Overview</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Status Card -->
+                    <div class="glass-panel p-6 rounded-2xl flex items-center space-x-4">
+                        <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-2xl border-2 border-slate-600" id="dash-club-logo">
+                            <i class="fa-solid fa-shield"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-400">Current Club</p>
+                            <h3 class="font-bold text-lg" id="dash-club">Real Madrid Academy</h3>
+                            <p class="text-sm text-blue-400" id="dash-role">Youth Prospect</p>
+                        </div>
+                    </div>
+                    <!-- Value Card -->
+                    <div class="glass-panel p-6 rounded-2xl flex items-center space-x-4">
+                        <div class="w-16 h-16 rounded-full bg-emerald-900/30 flex items-center justify-center text-2xl text-emerald-400">
+                            <i class="fa-solid fa-euro-sign"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-400">Market Value</p>
+                            <h3 class="font-bold text-2xl" id="dash-value">€500K</h3>
+                            <p class="text-sm text-slate-400">Wage: <span id="dash-wage">€500/w</span></p>
+                        </div>
+                    </div>
+                    <!-- Form Card -->
+                    <div class="glass-panel p-6 rounded-2xl flex items-center space-x-4">
+                        <div class="w-16 h-16 rounded-full bg-orange-900/30 flex items-center justify-center text-2xl text-orange-400">
+                            <i class="fa-solid fa-fire"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-400">Age & Potential</p>
+                            <h3 class="font-bold text-2xl" id="dash-age">15 yrs</h3>
+                            <p class="text-sm text-slate-400">Potential: <span id="dash-pot" class="text-white font-bold">85-94</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Latest Season Stats -->
+                    <div class="glass-panel rounded-2xl p-6">
+                        <h3 class="font-bold text-lg mb-4 border-b border-slate-700 pb-2">Previous Season Stats</h3>
+                        <div class="grid grid-cols-2 gap-4" id="dash-last-stats">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Career Milestones -->
+                    <div class="glass-panel rounded-2xl p-6">
+                        <h3 class="font-bold text-lg mb-4 border-b border-slate-700 pb-2">Recent Events</h3>
+                        <ul class="space-y-4" id="dash-events">
+                            <!-- Populated by JS -->
+                            <li class="flex items-start">
+                                <span class="text-blue-500 mr-3 mt-1"><i class="fa-solid fa-circle-dot text-xs"></i></span>
+                                <div>
+                                    <p class="text-sm">Joined Youth Academy</p>
+                                    <p class="text-xs text-slate-500">Aged 15</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile View -->
+            <div id="view-profile" class="view-section hidden">
+                <h2 class="text-2xl font-bold mb-6">Player Attributes</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Core Info -->
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col items-center text-center">
+                        <div class="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-5xl font-black mb-4 shadow-xl shadow-blue-900/50" id="prof-avatar">LM</div>
+                        <h2 class="text-2xl font-bold" id="prof-name">Player Name</h2>
+                        <p class="text-slate-400 mb-4" id="prof-nation-pos">Argentina • Striker (ST)</p>
+                        
+                        <div class="w-full bg-slate-800 rounded-xl p-4 flex justify-between items-center mb-2 border border-slate-700">
+                            <span class="text-slate-400 text-sm">Overall</span>
+                            <span class="text-2xl font-black text-blue-400" id="prof-ovr">75</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-xl p-4 flex justify-between items-center mb-4 border border-slate-700">
+                            <span class="text-slate-400 text-sm">Preferred Foot</span>
+                            <span class="font-bold text-white" id="prof-foot">Left</span>
+                        </div>
+                    </div>
+
+                    <!-- Attributes -->
+                    <div class="lg:col-span-2 glass-panel p-6 rounded-2xl">
+                        <h3 class="font-bold text-lg mb-6 border-b border-slate-700 pb-2">Technical & Physical</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6" id="attributes-container">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Club View -->
+            <div id="view-club" class="view-section hidden">
+                <h2 class="text-2xl font-bold mb-6">Club Information</h2>
+                
+                <div class="glass-panel p-8 rounded-2xl mb-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                    
+                    <div class="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-8">
+                        <div class="w-32 h-32 rounded-2xl bg-slate-800 flex items-center justify-center text-6xl border-4 border-slate-700 shadow-xl">
+                            <i class="fa-solid fa-shield-cat"></i>
+                        </div>
+                        <div class="flex-1 text-center md:text-left">
+                            <h2 class="text-3xl font-black mb-2" id="club-name">Club Name</h2>
+                            <p class="text-blue-400 font-medium mb-4" id="club-league">League Name</p>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                                    <p class="text-xs text-slate-400">Team Strength</p>
+                                    <p class="text-xl font-bold text-white" id="club-strength">85</p>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                                    <p class="text-xs text-slate-400">Reputation</p>
+                                    <p class="text-xl font-bold text-white" id="club-rep">90</p>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                                    <p class="text-xs text-slate-400">Squad Role</p>
+                                    <p class="text-sm font-bold text-white mt-1" id="club-role">Starter</p>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                                    <p class="text-xs text-slate-400">Contract Exp.</p>
+                                    <p class="text-sm font-bold text-white mt-1" id="club-contract">2027</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transfers View -->
+            <div id="view-transfers" class="view-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">Transfer Market</h2>
+                    <span class="px-3 py-1 bg-blue-900/50 text-blue-400 rounded-full text-sm border border-blue-800" id="transfer-window-status">Window Open</span>
+                </div>
+
+                <div id="offers-container" class="space-y-4">
+                    <!-- Populated by JS -->
+                    <div class="text-center py-12 glass-panel rounded-2xl">
+                        <i class="fa-solid fa-envelope-open text-4xl text-slate-600 mb-4"></i>
+                        <p class="text-slate-400">No transfer offers at the moment.</p>
+                        <p class="text-sm text-slate-500 mt-2">Offers usually arrive during the summer break after a season simulation.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History View -->
+            <div id="view-history" class="view-section hidden">
+                <h2 class="text-2xl font-bold mb-6">Career History</h2>
+
+                <!-- Total Stats Summary -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="history-totals">
+                    <!-- JS -->
+                </div>
+
+                <div class="glass-panel rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-slate-800 text-slate-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="px-4 py-3">Season</th>
+                                    <th class="px-4 py-3">Club</th>
+                                    <th class="px-4 py-3 text-center">Age</th>
+                                    <th class="px-4 py-3 text-center">OVR</th>
+                                    <th class="px-4 py-3 text-center">App</th>
+                                    <th class="px-4 py-3 text-center">G</th>
+                                    <th class="px-4 py-3 text-center">A</th>
+                                    <th class="px-4 py-3 text-center">CS</th>
+                                    <th class="px-4 py-3 text-center">Avg Rtg</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="divide-y divide-slate-800">
+                                <!-- JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trophies View -->
+            <div id="view-trophies" class="view-section hidden">
+                <h2 class="text-2xl font-bold mb-6">Trophy Cabinet & Awards</h2>
+
+                <div class="grid grid-cols-1 gap-8">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="font-bold text-lg mb-4 text-yellow-500 flex items-center"><i class="fa-solid fa-trophy mr-2"></i> Team Honors</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="trophies-container">
+                            <!-- JS will inject segregated trophies here -->
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="font-bold text-lg mb-4 text-blue-400 flex items-center"><i class="fa-solid fa-medal mr-2"></i> Individual Awards</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="awards-container">
+                            <!-- JS will inject segregated awards here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Retirement View -->
+            <div id="view-retirement" class="view-section hidden">
+                <div class="text-center max-w-4xl mx-auto py-12 px-4">
+                    <i class="fa-solid fa-shoe-prints text-6xl text-slate-600 mb-6"></i>
+                    <h1 class="text-4xl font-black mb-2 text-white">END OF AN ERA</h1>
+                    <p class="text-xl text-slate-400 mb-8" id="retire-msg">You have officially hung up your boots at age 38.</p>
+
+                    <div class="glass-panel p-8 rounded-2xl mb-8 border-t-4 border-blue-500 shadow-2xl max-w-2xl mx-auto">
+                        <h3 class="text-2xl font-bold mb-6">Career Legacy</h3>
+                        <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-8" id="retire-legacy">LEGEND</div>
+
+                        <div class="grid grid-cols-2 gap-4 text-left">
+                            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                                <p class="text-slate-400 text-sm">Total Matches</p>
+                                <p class="text-2xl font-bold text-white" id="ret-apps">0</p>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                                <p class="text-slate-400 text-sm">Total Goals</p>
+                                <p class="text-2xl font-bold text-white" id="ret-goals">0</p>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                                <p class="text-slate-400 text-sm">Total Assists</p>
+                                <p class="text-2xl font-bold text-white" id="ret-assists">0</p>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                                <p class="text-slate-400 text-sm">Ballon d'Ors</p>
+                                <p class="text-2xl font-bold text-yellow-500" id="ret-bdors">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full Career Summary Section -->
+                    <div class="glass-panel p-8 rounded-2xl mb-8 border-t-4 border-yellow-500 shadow-2xl text-left">
+                        <h3 class="text-2xl font-bold mb-6 text-center text-yellow-500"><i class="fa-solid fa-star mr-2"></i>Full Career Summary</h3>
+                        <div class="grid grid-cols-1 gap-8">
+                            <div>
+                                <h4 class="font-bold text-lg mb-4 text-blue-400 border-b border-slate-700 pb-2">Clubs Represented</h4>
+                                <ul id="ret-clubs" class="space-y-3 text-sm text-slate-300 grid grid-cols-1 md:grid-cols-2 gap-2"></ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-4 text-purple-400 border-b border-slate-700 pb-2">Individual Honors</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="ret-awards-container">
+                                    <!-- JS will inject segregated awards here -->
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-4 text-emerald-400 border-b border-slate-700 pb-2">Major Trophies</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="ret-trophies-container">
+                                    <!-- JS will inject segregated trophies here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+                        <button id="btn-download-summary" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-lg transition shadow-lg shadow-emerald-500/30">
+                            <i class="fa-solid fa-download mr-2"></i> Download Summary
+                        </button>
+                        <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-8 rounded-lg transition">
+                            Return to Main Menu
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Simulation Modal Overlay -->
+    <div id="sim-modal" class="fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+        <div class="text-center">
+            <div class="loader mx-auto mb-6"></div>
+            <h2 class="text-2xl font-bold mb-2">Simulating Season...</h2>
+            <p class="text-slate-400" id="sim-status-text">Playing matches...</p>
+        </div>
+    </div>
+
+    <!-- Retirement Confirmation Modal -->
+    <div id="retire-confirm-modal" class="fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center hidden backdrop-blur-sm p-4">
+        <div class="glass-panel max-w-md w-full rounded-2xl p-8 relative border-t-4 border-red-500 text-center">
+            <i class="fa-solid fa-triangle-exclamation text-5xl text-red-500 mb-4"></i>
+            <h2 class="text-2xl font-black mb-2">Retire from Football?</h2>
+            <p class="text-slate-400 mb-6">Are you sure you want to hang up your boots? This action cannot be undone and will end your current career.</p>
+            <div class="flex gap-4">
+                <button id="btn-cancel-retire" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition">Cancel</button>
+                <button id="btn-confirm-retire" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-red-500/30">Yes, Retire</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Season Summary Modal -->
+    <div id="summary-modal" class="fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center hidden backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="glass-panel max-w-xl w-full rounded-2xl p-8 relative border-t-4 border-blue-500 mt-10">
+            <h2 class="text-3xl font-black mb-1 text-center" id="sum-title">End of Season Summary</h2>
+            <p class="text-slate-400 text-center mb-6" id="sum-subtitle">Season 2024/25</p>
+
+            <div class="space-y-6">
+                <!-- Player Stats -->
+                <div class="bg-slate-800 rounded-xl p-4 border border-slate-700">
+                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider mb-3">Your Performance</h3>
+                    <div class="grid grid-cols-4 gap-2 text-center" id="sum-stats">
+                        <!-- JS -->
+                    </div>
+                </div>
+
+                <!-- Club Perf -->
+                <div class="bg-slate-800 rounded-xl p-4 border border-slate-700">
+                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider mb-3">Club & Honors</h3>
+                    <ul class="space-y-2 text-sm" id="sum-honors">
+                        <!-- JS -->
+                    </ul>
+                </div>
+
+                <!-- Development -->
+                <div class="bg-slate-800 rounded-xl p-4 border border-slate-700 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider">Attribute Growth</h3>
+                        <p class="text-xl font-bold text-white mt-1" id="sum-ovr">OVR: 75 <span class="text-emerald-400 text-sm ml-2">+2</span> <span id="sum-pot-change"></span></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-400">Current Age</p>
+                        <p class="font-bold" id="sum-age">16</p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-close-summary" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl mt-6 transition">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        /**
+         * FOOTBALL CAREER SIMULATOR
+         * Core Logic & State Management
+         */
+
+        // --- DATABASE: CLUBS (EXPANDED) ---
+        const CLUBS = [
+            // Academies (Youth Only - Rep is capped, Strength is low)
+            { id: 'acad_rma', name: 'Real Madrid Academy', league: 'Youth League', strength: 65, finance: 90, rep: 60, isYouth: true },
+            { id: 'acad_fcb', name: 'Barcelona La Masia', league: 'Youth League', strength: 65, finance: 85, rep: 60, isYouth: true },
+            { id: 'acad_mun', name: 'Man Utd Academy', league: 'Youth League', strength: 63, finance: 90, rep: 58, isYouth: true },
+            { id: 'acad_che', name: 'Chelsea Academy', league: 'Youth League', strength: 64, finance: 90, rep: 60, isYouth: true },
+            { id: 'acad_bay', name: 'Bayern Campus', league: 'Youth League', strength: 66, finance: 90, rep: 63, isYouth: true },
+            { id: 'acad_psg', name: 'PSG Academy', league: 'Youth League', strength: 65, finance: 95, rep: 61, isYouth: true },
+            { id: 'acad_juv', name: 'Juventus Youth', league: 'Youth League', strength: 64, finance: 80, rep: 60, isYouth: true },
+            { id: 'acad_ajx', name: 'Ajax Youth', league: 'Youth League', strength: 68, finance: 70, rep: 65, isYouth: true },
+            { id: 'acad_bvb', name: 'Dortmund Academy', league: 'Youth League', strength: 66, finance: 75, rep: 62, isYouth: true },
+            { id: 'acad_san', name: 'Santos Academy', league: 'Youth League', strength: 62, finance: 60, rep: 65, isYouth: true },
+            { id: 'acad_boc', name: 'Boca Juniors Youth', league: 'Youth League', strength: 63, finance: 65, rep: 66, isYouth: true },
+            
+            // Premier League
+            { id: 'mci', name: 'Manchester City', league: 'Premier League', strength: 93, finance: 98, rep: 95 },
+            { id: 'ars', name: 'Arsenal', league: 'Premier League', strength: 90, finance: 88, rep: 90 },
+            { id: 'liv', name: 'Liverpool', league: 'Premier League', strength: 89, finance: 90, rep: 92 },
+            { id: 'che', name: 'Chelsea', league: 'Premier League', strength: 85, finance: 95, rep: 88 },
+            { id: 'mun', name: 'Manchester United', league: 'Premier League', strength: 84, finance: 95, rep: 90 },
+            { id: 'tot', name: 'Tottenham', league: 'Premier League', strength: 84, finance: 85, rep: 85 },
+            { id: 'nwc', name: 'Newcastle United', league: 'Premier League', strength: 83, finance: 92, rep: 80 },
+            { id: 'ast', name: 'Aston Villa', league: 'Premier League', strength: 82, finance: 80, rep: 78 },
+            { id: 'bha', name: 'Brighton', league: 'Premier League', strength: 80, finance: 75, rep: 75 },
+            { id: 'whu', name: 'West Ham', league: 'Premier League', strength: 79, finance: 80, rep: 76 },
+            { id: 'eve', name: 'Everton', league: 'Premier League', strength: 76, finance: 70, rep: 75 },
+            { id: 'cpfc', name: 'Crystal Palace', league: 'Premier League', strength: 75, finance: 65, rep: 70 },
+            
+            // Championship (England Div 2)
+            { id: 'lei', name: 'Leicester City', league: 'Championship', strength: 76, finance: 75, rep: 75 },
+            { id: 'lee', name: 'Leeds United', league: 'Championship', strength: 75, finance: 72, rep: 74 },
+            { id: 'sun', name: 'Sunderland', league: 'Championship', strength: 72, finance: 68, rep: 70 },
+
+            // La Liga
+            { id: 'rma', name: 'Real Madrid', league: 'La Liga', strength: 94, finance: 95, rep: 98 },
+            { id: 'fcb', name: 'Barcelona', league: 'La Liga', strength: 91, finance: 80, rep: 95 },
+            { id: 'atm', name: 'Atletico Madrid', league: 'La Liga', strength: 87, finance: 85, rep: 88 },
+            { id: 'rso', name: 'Real Sociedad', league: 'La Liga', strength: 83, finance: 75, rep: 80 },
+            { id: 'ath', name: 'Athletic Club', league: 'La Liga', strength: 82, finance: 75, rep: 80 },
+            { id: 'bet', name: 'Real Betis', league: 'La Liga', strength: 80, finance: 70, rep: 78 },
+            { id: 'vil', name: 'Villarreal', league: 'La Liga', strength: 80, finance: 70, rep: 78 },
+            { id: 'sev', name: 'Sevilla', league: 'La Liga', strength: 79, finance: 65, rep: 82 },
+            { id: 'val', name: 'Valencia', league: 'La Liga', strength: 77, finance: 60, rep: 80 },
+            
+            // La Liga 2
+            { id: 'esp', name: 'Espanyol', league: 'La Liga 2', strength: 73, finance: 70, rep: 72 },
+            { id: 'zar', name: 'Real Zaragoza', league: 'La Liga 2', strength: 71, finance: 65, rep: 70 },
+
+            // Serie A
+            { id: 'int', name: 'Inter Milan', league: 'Serie A', strength: 90, finance: 80, rep: 90 },
+            { id: 'mil', name: 'AC Milan', league: 'Serie A', strength: 86, finance: 82, rep: 90 },
+            { id: 'juv', name: 'Juventus', league: 'Serie A', strength: 87, finance: 85, rep: 92 },
+            { id: 'nap', name: 'Napoli', league: 'Serie A', strength: 85, finance: 80, rep: 85 },
+            { id: 'rom', name: 'AS Roma', league: 'Serie A', strength: 83, finance: 80, rep: 85 },
+            { id: 'laz', name: 'Lazio', league: 'Serie A', strength: 82, finance: 75, rep: 80 },
+            { id: 'ata', name: 'Atalanta', league: 'Serie A', strength: 83, finance: 75, rep: 78 },
+            { id: 'fio', name: 'Fiorentina', league: 'Serie A', strength: 80, finance: 75, rep: 76 },
+            
+            // Serie B
+            { id: 'plm', name: 'Palermo', league: 'Serie B', strength: 72, finance: 70, rep: 71 },
+            { id: 'sam', name: 'Sampdoria', league: 'Serie B', strength: 73, finance: 68, rep: 72 },
+
+            // Bundesliga
+            { id: 'bay', name: 'Bayern Munich', league: 'Bundesliga', strength: 92, finance: 95, rep: 96 },
+            { id: 'bvb', name: 'Borussia Dortmund', league: 'Bundesliga', strength: 85, finance: 85, rep: 88 },
+            { id: 'rbl', name: 'RB Leipzig', league: 'Bundesliga', strength: 85, finance: 88, rep: 82 },
+            { id: 'b04', name: 'Bayer Leverkusen', league: 'Bundesliga', strength: 88, finance: 80, rep: 82 },
+            { id: 'sge', name: 'Eintracht Frankfurt', league: 'Bundesliga', strength: 80, finance: 75, rep: 78 },
+            { id: 'vfb', name: 'VfB Stuttgart', league: 'Bundesliga', strength: 81, finance: 70, rep: 75 },
+            { id: 'wob', name: 'Wolfsburg', league: 'Bundesliga', strength: 78, finance: 75, rep: 75 },
+            
+            // 2. Bundesliga
+            { id: 'sch', name: 'Schalke 04', league: '2. Bundesliga', strength: 72, finance: 75, rep: 75 },
+            { id: 'hsv', name: 'Hamburger SV', league: '2. Bundesliga', strength: 73, finance: 70, rep: 74 },
+
+            // Ligue 1
+            { id: 'psg', name: 'Paris SG', league: 'Ligue 1', strength: 90, finance: 98, rep: 92 },
+            { id: 'mar', name: 'Marseille', league: 'Ligue 1', strength: 82, finance: 80, rep: 84 },
+            { id: 'mon', name: 'AS Monaco', league: 'Ligue 1', strength: 81, finance: 82, rep: 80 },
+            { id: 'lyo', name: 'Lyon', league: 'Ligue 1', strength: 79, finance: 75, rep: 82 },
+            { id: 'lil', name: 'Lille', league: 'Ligue 1', strength: 80, finance: 75, rep: 78 },
+            { id: 'nic', name: 'Nice', league: 'Ligue 1', strength: 78, finance: 75, rep: 75 },
+            { id: 'len', name: 'Lens', league: 'Ligue 1', strength: 79, finance: 70, rep: 74 },
+            
+            // Ligue 2
+            { id: 'bor', name: 'Bordeaux', league: 'Ligue 2', strength: 70, finance: 65, rep: 71 },
+
+            // Other European (Primeira Liga, Eredivisie, Turkish)
+            { id: 'ajx', name: 'Ajax', league: 'Eredivisie', strength: 78, finance: 75, rep: 85 },
+            { id: 'psv', name: 'PSV', league: 'Eredivisie', strength: 80, finance: 70, rep: 80 },
+            { id: 'fey', name: 'Feyenoord', league: 'Eredivisie', strength: 79, finance: 70, rep: 78 },
+            { id: 'ben', name: 'Benfica', league: 'Primeira Liga', strength: 83, finance: 80, rep: 86 },
+            { id: 'por', name: 'FC Porto', league: 'Primeira Liga', strength: 82, finance: 78, rep: 85 },
+            { id: 'spo', name: 'Sporting CP', league: 'Primeira Liga', strength: 82, finance: 75, rep: 82 },
+            { id: 'bra', name: 'SC Braga', league: 'Primeira Liga', strength: 78, finance: 70, rep: 77 },
+            { id: 'gal', name: 'Galatasaray', league: 'Süper Lig', strength: 79, finance: 75, rep: 80 },
+            { id: 'fen', name: 'Fenerbahçe', league: 'Süper Lig', strength: 78, finance: 75, rep: 79 },
+            { id: 'bes', name: 'Beşiktaş', league: 'Süper Lig', strength: 77, finance: 70, rep: 78 },
+
+            // Rest of World (Saudi, MLS, Brasileirão, ISL)
+            { id: 'aln', name: 'Al Nassr', league: 'Saudi Pro League', strength: 82, finance: 99, rep: 80 },
+            { id: 'alh', name: 'Al Hilal', league: 'Saudi Pro League', strength: 83, finance: 99, rep: 81 },
+            { id: 'ali', name: 'Al Ittihad', league: 'Saudi Pro League', strength: 81, finance: 98, rep: 79 },
+            { id: 'mia', name: 'Inter Miami', league: 'MLS', strength: 76, finance: 85, rep: 78 },
+            { id: 'laf', name: 'LAFC', league: 'MLS', strength: 74, finance: 80, rep: 75 },
+            { id: 'lag', name: 'LA Galaxy', league: 'MLS', strength: 73, finance: 80, rep: 76 },
+            { id: 'fla', name: 'Flamengo', league: 'Brasileirão', strength: 79, finance: 80, rep: 82 },
+            { id: 'plm', name: 'Palmeiras', league: 'Brasileirão', strength: 78, finance: 78, rep: 80 },
+            { id: 'sao', name: 'São Paulo', league: 'Brasileirão', strength: 76, finance: 75, rep: 78 },
+            { id: 'mum', name: 'Mumbai City FC', league: 'ISL', strength: 62, finance: 65, rep: 55 },
+            { id: 'moh', name: 'Mohun Bagan SG', league: 'ISL', strength: 61, finance: 65, rep: 56 },
+            { id: 'bgl', name: 'Bengaluru FC', league: 'ISL', strength: 60, finance: 60, rep: 54 },
+            { id: 'goa', name: 'FC Goa', league: 'ISL', strength: 59, finance: 60, rep: 53 }
+        ];
+
+        // --- NATIONS DATABASE ---
+        const NATIONS = {
+            'England': { region: 'Europe', str: 90, comp: 'European Championship' },
+            'Spain': { region: 'Europe', str: 90, comp: 'European Championship' },
+            'France': { region: 'Europe', str: 92, comp: 'European Championship' },
+            'Germany': { region: 'Europe', str: 89, comp: 'European Championship' },
+            'Italy': { region: 'Europe', str: 88, comp: 'European Championship' },
+            'Portugal': { region: 'Europe', str: 89, comp: 'European Championship' },
+            'Netherlands': { region: 'Europe', str: 86, comp: 'European Championship' },
+            'Brazil': { region: 'South America', str: 91, comp: 'Copa America' },
+            'Argentina': { region: 'South America', str: 92, comp: 'Copa America' },
+            'USA': { region: 'North America', str: 78, comp: 'Gold Cup' },
+            'India': { region: 'Asia', str: 60, comp: 'Asian Cup' }
+        };
+
+        const POSITIONS = ['GK', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CAM', 'LW', 'RW', 'ST'];
+        
+        // --- GAME STATE ---
+        let game = {
+            player: {
+                firstName: '', lastName: '', nation: '', foot: '', pos: '',
+                age: 15, ovr: 55, pot: 85, lastPotChange: 0,
+                attrs: { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50, vision: 50, stamina: 50 },
+                value: 500000, wage: 500, contractExp: 2026, role: 'Youth Prospect'
+            },
+            club: null,
+            career: {
+                year: 2024, isRetired: false,
+                totalApps: 0, totalGoals: 0, totalAssists: 0, totalCS: 0, avgRatingSum: 0, seasonsPlayed: 0,
+                totalIntlApps: 0, totalIntlGoals: 0, // NEW: Int'l tracking
+                history: [], // array of season stat objects
+                trophies: [], // array of string
+                awards: [] // array of string
+            },
+            transfers: { offers: [] },
+            events: [] // recent news
+        };
+
+        // --- CORE FUNCTIONS ---
+
+        function init() {
+            // Render position buttons
+            const posContainer = document.getElementById('position-selector');
+            POSITIONS.forEach(pos => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'pos-btn border border-slate-700 rounded-lg py-2 text-sm font-bold text-slate-400 hover:border-blue-500 hover:text-blue-500 transition';
+                btn.innerText = pos;
+                btn.onclick = () => selectPosition(btn, pos);
+                posContainer.appendChild(btn);
+            });
+            // Default select ST
+            selectPosition(posContainer.lastChild, 'ST');
+
+            // Render Academy options
+            const acadSelect = document.getElementById('cp-academy');
+            CLUBS.filter(c => c.isYouth).forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.innerText = c.name;
+                acadSelect.appendChild(opt);
+            });
+
+            // Check save
+            const save = localStorage.getItem('careerSimSave');
+            if (save) {
+                document.getElementById('btn-continue').classList.remove('hidden');
+            }
+
+            // Event Listeners
+            document.getElementById('btn-new-game').addEventListener('click', () => switchScreen('screen-create'));
+            document.getElementById('btn-continue').addEventListener('click', loadGame);
+            document.getElementById('create-form').addEventListener('submit', createPlayer);
+            
+            // Nav listeners
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    showView('view-' + e.currentTarget.dataset.target);
+                    if(e.currentTarget.dataset.target === 'transfers') {
+                        document.getElementById('transfer-badge').classList.add('hidden');
+                    }
+                });
+            });
+
+            document.getElementById('btn-simulate').addEventListener('click', simulateSeason);
+            document.getElementById('mob-simulate').addEventListener('click', simulateSeason);
+            
+            // Retirement Listeners
+            document.getElementById('btn-retire-early').addEventListener('click', () => {
+                document.getElementById('retire-confirm-modal').classList.remove('hidden');
+            });
+            document.getElementById('mob-retire').addEventListener('click', () => {
+                document.getElementById('retire-confirm-modal').classList.remove('hidden');
+            });
+            document.getElementById('btn-cancel-retire').addEventListener('click', () => {
+                document.getElementById('retire-confirm-modal').classList.add('hidden');
+            });
+            document.getElementById('btn-confirm-retire').addEventListener('click', () => {
+                document.getElementById('retire-confirm-modal').classList.add('hidden');
+                game.career.isRetired = true;
+                saveGame();
+                showRetirement();
+            });
+
+            document.getElementById('btn-close-summary').addEventListener('click', () => {
+                document.getElementById('summary-modal').classList.add('hidden');
+                updateUI();
+                if(game.transfers.offers.length > 0) {
+                    document.getElementById('transfer-badge').classList.remove('hidden');
+                    document.querySelector('[data-target="transfers"]').click();
+                }
+            });
+
+            document.getElementById('btn-download-summary').addEventListener('click', downloadCareerSummary);
+        }
+
+        // Must define startGameUI BEFORE it's called
+        function startGameUI() {
+            switchScreen('main-layout');
+            updateUI();
+            document.querySelector('.nav-item').click(); // trigger dashboard
+        }
+
+        function switchScreen(screenId) {
+            // Robustly hide all screens using inline styles to override any Tailwind flex conflicts
+            const allScreens = ['screen-start', 'screen-create', 'main-layout'];
+            
+            allScreens.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.display = 'none';
+                    el.classList.remove('active'); 
+                }
+            });
+            
+            // Show the requested screen
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.remove('hidden'); // Clean up any tailwind hidden classes
+                targetScreen.classList.add('active'); // Re-trigger animations
+                
+                // Keep the layout intact depending on the specific screen type
+                if (screenId === 'main-layout' || screenId === 'screen-start') {
+                    targetScreen.style.display = 'flex';
+                } else {
+                    targetScreen.style.display = 'block';
+                }
+            }
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+            document.getElementById(viewId).classList.add('block');
+        }
+
+        function selectPosition(btn, pos) {
+            document.querySelectorAll('.pos-btn').forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+                b.classList.add('text-slate-400');
+            });
+            btn.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+            btn.classList.remove('text-slate-400');
+            document.getElementById('cp-pos').value = pos;
+        }
+
+        function rInt(min, max) { return Math.floor(Math.random() * (max - min + 1) + min); }
+        function formatMoney(num) {
+            if (num >= 1000000) return '€' + (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return '€' + (num / 1000).toFixed(0) + 'K';
+            return '€' + num;
+        }
+
+        function createPlayer(e) {
+            e.preventDefault();
+            
+            game.player.firstName = document.getElementById('cp-fname').value;
+            game.player.lastName = document.getElementById('cp-lname').value;
+            game.player.nation = document.getElementById('cp-nation').value;
+            game.player.foot = document.getElementById('cp-foot').value;
+            game.player.pos = document.getElementById('cp-pos').value;
+            
+            // Base attributes Generation
+            game.player.age = 15;
+            game.player.pot = rInt(82, 95); // High potential
+            let base = rInt(45, 55); // Starting base
+            
+            // Adjust base based on position
+            const p = game.player.pos;
+            game.player.attrs = {
+                pace: base + rInt(-5, 15),
+                shooting: base + rInt(-10, 15),
+                passing: base + rInt(-5, 15),
+                dribbling: base + rInt(-5, 15),
+                defending: base + rInt(-10, 15),
+                physical: base + rInt(-5, 15),
+                vision: base + rInt(-5, 15),
+                stamina: base + rInt(5, 15)
+            };
+
+            // Enhance specific stats
+            if(p === 'ST' || p === 'LW' || p === 'RW') { game.player.attrs.shooting += 10; game.player.attrs.pace += 10; game.player.attrs.defending -= 15; }
+            if(p === 'CAM' || p === 'CM') { game.player.attrs.passing += 12; game.player.attrs.vision += 10; }
+            if(p === 'CDM' || p === 'CB') { game.player.attrs.defending += 15; game.player.attrs.physical += 10; game.player.attrs.shooting -= 15; }
+            if(p === 'LB' || p === 'RB') { game.player.attrs.pace += 10; game.player.attrs.stamina += 15; }
+            if(p === 'GK') { Object.keys(game.player.attrs).forEach(k => game.player.attrs[k] = base - 10); game.player.attrs.defending = base + 15; /* defending acts as goalkeeping */ }
+
+            calculateOVR();
+
+            // Assign to selected academy
+            const selectedAcadId = document.getElementById('cp-academy').value;
+            game.club = CLUBS.find(c => c.id === selectedAcadId);
+            
+            game.events.push({ year: game.career.year, text: `Joined ${game.club.name} at age 15.` });
+
+            saveGame();
+            startGameUI();
+        }
+
+        function calculateOVR() {
+            let a = game.player.attrs;
+            // Cap at 99
+            Object.keys(a).forEach(k => { if(a[k] > 99) a[k] = 99; if(a[k] < 1) a[k] = 1; });
+
+            let ovr = 0;
+            const p = game.player.pos;
+            if (p === 'ST') ovr = a.shooting*0.35 + a.pace*0.2 + a.dribbling*0.2 + a.physical*0.15 + a.passing*0.1;
+            else if (p === 'LW' || p === 'RW') ovr = a.pace*0.3 + a.dribbling*0.3 + a.passing*0.15 + a.shooting*0.2 + a.stamina*0.05;
+            else if (p === 'CAM') ovr = a.passing*0.3 + a.vision*0.3 + a.dribbling*0.2 + a.shooting*0.15 + a.pace*0.05;
+            else if (p === 'CM') ovr = a.passing*0.3 + a.vision*0.2 + a.dribbling*0.15 + a.stamina*0.15 + a.defending*0.1 + a.physical*0.1;
+            else if (p === 'CDM') ovr = a.defending*0.35 + a.physical*0.25 + a.stamina*0.2 + a.passing*0.15 + a.vision*0.05;
+            else if (p === 'CB') ovr = a.defending*0.5 + a.physical*0.3 + a.pace*0.1 + a.passing*0.1;
+            else if (p === 'LB' || p === 'RB') ovr = a.pace*0.25 + a.defending*0.25 + a.stamina*0.25 + a.passing*0.15 + a.dribbling*0.1;
+            else if (p === 'GK') ovr = a.defending*0.8 + a.physical*0.2; // Defending acts as GK reflex/handling
+
+            game.player.ovr = Math.round(ovr);
+        }
+
+        function calculateValue() {
+            const age = game.player.age;
+            const ovr = game.player.ovr;
+            
+            let baseV = 0;
+            
+            // Tiered realistic base values
+            if (ovr >= 90) baseV = 80000000 + ((ovr - 90) * 15000000); // 90=80M, 95=155M, 99=215M
+            else if (ovr >= 85) baseV = 40000000 + ((ovr - 85) * 8000000); // 85=40M, 89=72M
+            else if (ovr >= 80) baseV = 15000000 + ((ovr - 80) * 5000000); // 80=15M, 84=35M
+            else if (ovr >= 70) baseV = 3000000 + ((ovr - 70) * 1200000); // 70=3M, 79=13.8M
+            else baseV = 500000 + ((Math.max(50, ovr) - 50) * 125000); // 50=500k, 60=1.75M
+
+            // Age factor multipliers
+            let ageMult = 1.0;
+            if(age <= 21) ageMult = 1.5;
+            else if(age <= 24) ageMult = 1.2;
+            else if(age <= 28) ageMult = 1.0;
+            else if(age <= 31) ageMult = 0.8;
+            else if(age <= 34) ageMult = 0.4;
+            else ageMult = 0.1;
+
+            game.player.value = Math.round(baseV * ageMult);
+        }
+
+        // --- SIMULATION ENGINE ---
+        
+        function simulateSeason() {
+            if(game.career.isRetired) return;
+
+            // Show loading
+            document.getElementById('sim-modal').classList.remove('hidden');
+
+            setTimeout(() => {
+                const oldOvr = game.player.ovr;
+                
+                // 1. Age and Growth
+                game.player.age++;
+                game.career.year++;
+                growPlayer();
+                calculateOVR();
+                calculateValue();
+
+                // 2. Play Matches
+                let seasonStats = generateMatchStats();
+                game.career.history.push(seasonStats);
+                
+                // 3. Update Totals
+                game.career.totalApps += seasonStats.apps;
+                game.career.totalGoals += seasonStats.goals;
+                game.career.totalAssists += seasonStats.assists;
+                game.career.totalCS += seasonStats.cs;
+                
+                // Int'l Stats update
+                game.career.totalIntlApps = (game.career.totalIntlApps || 0) + seasonStats.intlApps;
+                game.career.totalIntlGoals = (game.career.totalIntlGoals || 0) + seasonStats.intlGoals;
+                
+                game.career.seasonsPlayed++;
+                game.career.avgRatingSum += seasonStats.avgRating;
+
+                // 4. Competitions & Trophies
+                let honors = simulateCompetitions(seasonStats);
+
+                // 4.5. Season Narratives & Captaincy
+                if (seasonStats.narrative) {
+                    game.events.unshift({ year: game.career.year, text: seasonStats.narrative });
+                }
+                
+                let yearsAtClub = game.career.history.filter(h => h.clubName === game.club.name).length;
+                if (!game.club.isYouth && yearsAtClub >= 3 && game.player.ovr >= game.club.strength && game.player.role !== "Captain") {
+                    if (rInt(1, 100) > 70) {
+                        game.player.role = "Captain";
+                        game.events.unshift({ year: game.career.year, text: `Given the captain's armband at ${game.club.name}!` });
+                    }
+                }
+
+                // 5. Transfer Offers
+                generateOffers();
+
+                // 6. Check Contract
+                if(game.player.contractExp <= game.career.year && !game.club.isYouth) {
+                    game.events.unshift({ year: game.career.year, text: `Contract expired. Signed a 2-year extension.` });
+                    game.player.contractExp = game.career.year + 2;
+                }
+
+                // 7. Check Forced Retirement (Pushed to 45)
+                if(game.player.age >= 45) {
+                    game.career.isRetired = true;
+                }
+
+                // Save & Update UI
+                saveGame();
+                
+                document.getElementById('sim-modal').classList.add('hidden');
+                
+                if(game.career.isRetired) {
+                    showRetirement();
+                } else {
+                    showSeasonSummary(seasonStats, honors, game.player.ovr - oldOvr);
+                }
+
+            }, 1500); // Fake delay for UX
+        }
+
+        function growPlayer() {
+            let age = game.player.age;
+            let ovr = game.player.ovr;
+            let pot = game.player.pot;
+            
+            game.player.lastPotChange = 0;
+            let lastRating = game.career.history.length > 0 ? game.career.history[game.career.history.length - 1].avgRating : 6.5;
+            
+            // Dynamic Potential: Reward amazing seasons, punish terrible ones. Locked until age 21!
+            if (game.career.history.length > 0 && age >= 21) {
+                if (lastRating >= 7.6 && age <= 28 && pot < 99) {
+                    let boost = lastRating >= 8.2 ? 2 : 1;
+                    game.player.pot += boost;
+                    game.player.lastPotChange = boost;
+                    game.events.unshift({ year: game.career.year, text: `Incredible form! Potential increased by ${boost}.` });
+                }
+                else if (lastRating <= 6.5 && age < 25 && pot > 75) {
+                    game.player.pot -= 1;
+                    game.player.lastPotChange = -1;
+                }
+            }
+            
+            let gap = game.player.pot - game.player.ovr;
+            let baseGrowth = 0;
+            
+            // Consistent Growth Logic: Tied to mathematical gap and form factor
+            let formFactor = Math.max(0.2, Math.min((lastRating - 5.5) / 2.5, 1.5)); // Scales 0.2 (terrible) to 1.5 (amazing)
+
+            if (age <= 21) {
+                if (gap > 0) baseGrowth = Math.ceil((gap / (24 - age)) * formFactor);
+            } else if (age <= 25) {
+                if (gap > 0) baseGrowth = Math.ceil((gap / 4) * formFactor);
+            } else if (age <= 29) {
+                // Extended peak growth - can still aggressively reach potential if form is good!
+                if (gap > 0) baseGrowth = Math.ceil((gap / 6) * formFactor);
+            } else if (age <= 32) {
+                // Peak/Maintenance - Slow growth to top off late bloomers
+                if (gap > 0 && lastRating >= 7.5 && rInt(1,100) > 40) baseGrowth = 1;
+                else baseGrowth = 0;
+            } else if (age <= 35) {
+                // Gentle decline starts, but can be halted by great form
+                baseGrowth = lastRating >= 7.5 ? 0 : -1;
+            } else {
+                // Sharp late-career decline
+                baseGrowth = rInt(-3, -1);
+            }
+
+            // Apply to attrs
+            Object.keys(game.player.attrs).forEach(k => {
+                let mod = baseGrowth;
+                
+                // Add a tiny variance so stats don't all look identical, but ensure it averages positively
+                if (baseGrowth > 0) mod += (Math.random() > 0.4 ? 1 : 0); // Boosted variance slightly so secondary stats catch up faster
+                else if (baseGrowth < 0) mod += (Math.random() > 0.5 ? -1 : 0);
+                
+                // Absolutely NO DECLINE before age 32
+                if (age < 32 && mod < 0) mod = 0;
+                
+                game.player.attrs[k] += mod;
+                
+                // Hard limits
+                if (game.player.attrs[k] > 99) game.player.attrs[k] = 99;
+                if (game.player.attrs[k] < 1) game.player.attrs[k] = 1;
+            });
+        }
+
+        function generateMatchStats() {
+            const pos = game.player.pos;
+            const ovr = game.player.ovr;
+            const clubStrength = game.club.strength;
+            const isYouth = game.club.isYouth;
+
+            let maxApps = isYouth ? 30 : 50;
+            let apps = 0;
+            
+            // Determine playing time based on OVR vs Club Strength
+            if (isYouth) {
+                apps = rInt(20, 30);
+                game.player.role = "Youth Player";
+            } else {
+                let diff = ovr - clubStrength;
+                let isCaptain = game.player.role === "Captain"; // Preserve captaincy
+                
+                if (diff >= -3) { apps = rInt(35, 50); game.player.role = isCaptain ? "Captain" : "Crucial"; }
+                else if (diff >= -8) { apps = rInt(20, 35); game.player.role = "Rotation"; }
+                else if (diff >= -15) { apps = rInt(5, 20); game.player.role = (game.player.age >= 32) ? "Super Sub" : "Bench"; }
+                else { apps = rInt(0, 5); game.player.role = (game.player.age >= 32) ? "Veteran" : (game.player.age <= 23 ? "Prospect" : "Reserve"); }
+            }
+
+            // Injury & Narrative System
+            let injuryRoll = rInt(1, 100);
+            let gamesMissed = 0;
+            let narrative = "Played a solid, injury-free season.";
+            
+            if (apps > 10) {
+                if (injuryRoll > 90) { // 10% chance of major injury
+                    gamesMissed = rInt(15, 30);
+                    narrative = "Suffered a major injury, spending months on the sidelines.";
+                } else if (injuryRoll > 65) { // 25% chance of minor injuries
+                    gamesMissed = rInt(4, 12);
+                    narrative = "Dealt with frustrating minor injuries throughout the campaign.";
+                }
+            }
+            
+            apps = Math.max(0, apps - gamesMissed);
+
+            let goals = 0;
+            let assists = 0;
+            let cs = 0; // clean sheets
+            let rating = 0;
+
+            if (apps > 0) {
+                // Performance Multiplier + Dynamic Form
+                let formFactor = rInt(85, 115) / 100;
+                if (formFactor > 1.10 && gamesMissed === 0) narrative = "Was in absolute peak form all season!";
+                else if (formFactor < 0.90 && gamesMissed === 0) narrative = "Struggled to find consistent form on the pitch.";
+                
+                let formMult = (ovr / 70) * (clubStrength / 80) * formFactor;
+                
+                if (pos === 'ST') {
+                    goals = Math.round(apps * 0.5 * formMult * (game.player.attrs.shooting/80) * (rInt(80,120)/100));
+                    assists = Math.round(apps * 0.15 * formMult);
+                } else if (pos === 'LW' || pos === 'RW') {
+                    goals = Math.round(apps * 0.3 * formMult * (game.player.attrs.shooting/80));
+                    assists = Math.round(apps * 0.3 * formMult * (game.player.attrs.passing/80));
+                } else if (pos === 'CAM') {
+                    goals = Math.round(apps * 0.2 * formMult);
+                    assists = Math.round(apps * 0.4 * formMult * (game.player.attrs.passing/80));
+                } else if (pos === 'CM') {
+                    goals = Math.round(apps * 0.1 * formMult);
+                    assists = Math.round(apps * 0.2 * formMult);
+                } else if (pos === 'CDM') {
+                    goals = Math.round(apps * 0.05 * formMult);
+                    assists = Math.round(apps * 0.1 * formMult);
+                } else if (pos === 'LB' || pos === 'RB') {
+                    goals = Math.round(apps * 0.02 * formMult);
+                    assists = Math.round(apps * 0.15 * formMult);
+                    cs = Math.round(apps * 0.3 * (clubStrength/80));
+                } else if (pos === 'CB') {
+                    goals = Math.round(apps * 0.05 * formMult);
+                    assists = Math.round(apps * 0.02 * formMult);
+                    cs = Math.round(apps * 0.35 * (clubStrength/80));
+                } else if (pos === 'GK') {
+                    cs = Math.round(apps * 0.4 * formMult * (clubStrength/80));
+                }
+
+                // Avg Rating math
+                let baseRating = 6.0;
+                let statBonus = ((goals * 2) + (assists * 1) + (cs * 1.5)) / apps;
+                rating = Math.min(10, Math.max(5.0, baseRating + statBonus + ((ovr-70)/20) + (rInt(-5,5)/10)));
+                rating = Math.round(rating * 10) / 10;
+            }
+            
+            // --- INTERNATIONAL SIMULATION ---
+            let nat = NATIONS[game.player.nation];
+            let callUpThreshold = nat.str - 10; // E.g., need 82 OVR for France, 50 OVR for India
+            let intlApps = 0, intlGoals = 0;
+            
+            if (ovr >= callUpThreshold && game.player.age >= 17) {
+                // Determine number of caps (friendlies + qualifiers)
+                intlApps = rInt(5, 12);
+                if (ovr < callUpThreshold + 4) intlApps = rInt(1, 4); // Borderline player gets fewer caps
+                
+                let intlFormMult = (ovr / nat.str) * (rInt(90, 110) / 100);
+                if (pos === 'ST') intlGoals = Math.round(intlApps * 0.5 * intlFormMult);
+                else if (pos === 'LW' || pos === 'RW' || pos === 'CAM') intlGoals = Math.round(intlApps * 0.3 * intlFormMult);
+                else if (pos === 'CM' || pos === 'CDM') intlGoals = Math.round(intlApps * 0.1 * intlFormMult);
+                else intlGoals = Math.round(intlApps * 0.05 * intlFormMult);
+            }
+
+            return {
+                season: `${game.career.year-1}/${game.career.year.toString().slice(2)}`,
+                clubName: game.club.name,
+                age: game.player.age - 1,
+                ovr: ovr,
+                apps: apps,
+                goals: goals,
+                assists: assists,
+                cs: cs,
+                avgRating: apps > 0 ? rating : 0,
+                intlApps: intlApps,
+                intlGoals: intlGoals,
+                narrative: narrative
+            };
+        }
+
+        function simulateCompetitions(stats) {
+            let honors = [];
+            const str = game.club.strength;
+            
+            if(game.club.isYouth) return ["Youth League Participation"];
+
+            // League
+            let leagueWinProb = (str - 75) * 5; // e.g. str 90 = 75%
+            if(rInt(1, 100) <= leagueWinProb) {
+                honors.push(`${game.club.league} Champion`);
+                game.career.trophies.unshift(`${game.career.year}: ${game.club.league}`);
+            }
+
+            // Cup
+            if(rInt(1, 100) <= (str - 70) * 3) {
+                honors.push(`Domestic Cup Winner`);
+                game.career.trophies.unshift(`${game.career.year}: Domestic Cup`);
+            }
+
+            // Continental (UCL) - only for top rep teams
+            if(game.club.rep >= 85) {
+                if(rInt(1, 100) <= (str - 85) * 6) {
+                    honors.push(`Champions League Winner`);
+                    game.career.trophies.unshift(`${game.career.year}: Champions League`);
+                }
+            }
+
+            // Individual Awards
+            if(stats.apps > 20) {
+                // Award logic bonuses
+                let uclBonus = honors.includes("Champions League Winner") ? 40 : 0;
+                let leagueBonus = honors.some(h => h.includes("Champion")) ? 20 : 0;
+                let intBonus = honors.some(h => h.includes("Winner (")) ? 50 : 0;
+                
+                // Adjust score based on position so Defenders/GKs have a chance!
+                let statsScore = (game.player.pos === 'GK' || game.player.pos === 'CB' || game.player.pos === 'LB' || game.player.pos === 'RB') 
+                    ? (stats.cs * 4) + (stats.goals * 2) + (stats.assists * 2)
+                    : (stats.goals * 3) + (stats.assists * 2);
+
+                let bdScore = statsScore + (stats.avgRating * 10) + game.club.rep + uclBonus + leagueBonus + intBonus;
+                
+                // Yashin Trophy (Goalkeepers Only)
+                if(game.player.pos === 'GK' && game.player.ovr >= 84 && bdScore > 240) {
+                    let yChance = Math.min(90, (bdScore - 240) + 30);
+                    if(rInt(1, 100) <= yChance) {
+                        honors.push(`Yashin Trophy Winner`);
+                        game.career.awards.unshift(`${game.career.year}: Yashin Trophy`);
+                    } else {
+                        honors.push(`Yashin Trophy Nominee`);
+                    }
+                }
+
+                // Ballon d'Or
+                if(game.player.ovr >= 86 && bdScore > 280) {
+                    let winChance = Math.min(85, (bdScore - 280) + 20); // Max 85% chance to allow for 'robberies'
+                    if(rInt(1, 100) <= winChance) {
+                        honors.push(`Ballon d'Or Winner`);
+                        game.career.awards.unshift(`${game.career.year}: Ballon d'Or`);
+                    } else {
+                        honors.push(`Ballon d'Or Nominee`);
+                    }
+                }
+
+                // The Best FIFA Men's Player (Similar to BdO but slightly randomized so winners can differ)
+                if(game.player.ovr >= 86 && bdScore > 275) {
+                    let fifaChance = Math.min(85, (bdScore - 275) + 15) + rInt(-15, 15); 
+                    if(rInt(1, 100) <= fifaChance) {
+                        honors.push(`The Best FIFA Men's Player`);
+                        game.career.awards.unshift(`${game.career.year}: FIFA Best Player`);
+                    }
+                }
+                
+                // Golden Boot
+                if(stats.goals >= 28 && rInt(1, 100) > (stats.goals > 35 ? 10 : 40)) {
+                    honors.push(`Golden Boot`);
+                    game.career.awards.unshift(`${game.career.year}: Golden Boot`);
+                }
+            }
+
+            // International Tournaments (World Cup every 4 years, Regional Cup every 4 years staggered)
+            if(stats.intlApps > 0) {
+                let isWorldCup = (game.career.year % 4 === 2); // 2026, 2030, etc.
+                let isRegionalCup = (game.career.year % 4 === 0); // 2024, 2028, etc.
+                
+                if (isWorldCup || isRegionalCup) {
+                    let nat = NATIONS[game.player.nation];
+                    let comp = isWorldCup ? "World Cup" : nat.comp;
+                    
+                    honors.push(`Called up for ${comp}`);
+                    
+                    // Tournament win probability based on Nation real strength + player carry
+                    let teamStr = nat.str;
+                    if (game.player.ovr > teamStr) teamStr += (game.player.ovr - teamStr) * 0.4; 
+                    
+                    let winProb = (teamStr - 82) * 5; // France (92)=50%. USA (78)=0%
+                    if (rInt(1, 100) > 96) winProb += 40; // 4% chance for a Cinderella run!
+                    
+                    if(rInt(1, 100) <= winProb) {
+                        honors.push(`${comp} Winner (${game.player.nation})`);
+                        game.career.trophies.unshift(`${game.career.year}: ${comp} (${game.player.nation})`);
+                    }
+                }
+            }
+
+            if(honors.length === 0) honors.push("No major trophies this season.");
+            return honors;
+        }
+
+        function generateOffers() {
+            game.transfers.offers = [];
+            const isYouth = game.club.isYouth;
+            
+            // At 18, must sign pro contract
+            if(isYouth && game.player.age === 18) {
+                game.events.unshift({ year: game.career.year, text: "Graduated from academy." });
+                // Promote to main team if exists, else random top league team
+                let proClubId = game.club.id.replace('acad_', '');
+                let proClub = CLUBS.find(c => c.id === proClubId);
+                if(!proClub) {
+                    let potentials = CLUBS.filter(c => !c.isYouth && c.rep < 80);
+                    proClub = potentials[rInt(0, potentials.length-1)];
+                }
+                
+                createOffer(proClub, "Pro Contract");
+                return; // Only 1 forced offer when graduating
+            }
+
+            // Normal transfer window logic
+            if(game.player.age >= 18) {
+                // 1. Current Club Renewal (if not youth and doing well, or contract expiring)
+                if (!isYouth) {
+                    let diff = game.player.ovr - game.club.strength;
+                    let yearsLeft = game.player.contractExp - game.career.year;
+                    if (diff >= -8 || yearsLeft <= 1) { // Crucial, Important, Rotation, or expiring
+                        createOffer(game.club, "Contract Renewal");
+                    }
+                }
+
+                let potentialClubs = [];
+                
+                // OVR-based Transfer Targeting
+                if (game.player.ovr >= 90) {
+                    // Elite Player: Only attract World Class clubs (Rep 88+)
+                    potentialClubs = CLUBS.filter(c => !c.isYouth && c.id !== game.club.id && c.rep >= 88);
+                } else if (game.player.ovr >= 80) {
+                    // Great Player: Attract strong teams close to their level
+                    potentialClubs = CLUBS.filter(c => !c.isYouth && c.id !== game.club.id && c.rep >= game.player.ovr - 5 && c.rep <= game.player.ovr + 10);
+                } else {
+                    // Standard matching
+                    potentialClubs = CLUBS.filter(c => !c.isYouth && c.id !== game.club.id && Math.abs(c.rep - game.player.ovr) <= 10);
+                }
+                
+                // Guarantee offers based on star power
+                let numOffers = rInt(0, 3);
+                if (game.player.ovr >= 90) numOffers = rInt(2, 4);
+                else if (game.player.ovr >= 80) numOffers = rInt(1, 3);
+                
+                // Shuffle potential clubs
+                potentialClubs.sort(() => 0.5 - Math.random());
+                
+                for(let i=0; i<Math.min(numOffers, potentialClubs.length); i++) {
+                    createOffer(potentialClubs[i], "Transfer");
+                }
+            }
+        }
+
+        function createOffer(club, type) {
+            let baseWage = 0;
+            if (game.player.ovr < 60) baseWage = rInt(500, 2000);
+            else if (game.player.ovr < 70) baseWage = rInt(3000, 15000);
+            else if (game.player.ovr < 80) baseWage = rInt(20000, 60000);
+            else if (game.player.ovr < 85) baseWage = rInt(70000, 150000);
+            else if (game.player.ovr < 90) baseWage = rInt(150000, 300000);
+            else baseWage = rInt(300000, 500000);
+
+            let wage = Math.round((baseWage * (club.finance / 80)) / 100) * 100;
+            
+            let role = "Rotation";
+            let diff = game.player.ovr - club.strength;
+            if(diff >= 0) role = "Crucial";
+            else if(diff >= -5) role = "Important";
+            else if(diff >= -10) role = "Rotation";
+            else role = (game.player.age >= 32) ? "Veteran" : (game.player.age <= 23 ? "Prospect" : "Reserve");
+
+            let fee = type === "Contract Renewal" ? 0 : Math.round(game.player.value * (rInt(90, 130)/100));
+
+            game.transfers.offers.push({
+                id: Math.random().toString(36).substr(2, 9),
+                club: club,
+                type: type, // "Transfer", "Pro Contract", or "Contract Renewal"
+                wage: wage,
+                fee: fee,
+                length: rInt(2, 5),
+                role: role
+            });
+        }
+
+        function acceptOffer(offerId) {
+            const offer = game.transfers.offers.find(o => o.id === offerId);
+            if(!offer) return;
+
+            if (offer.type === "Contract Renewal") {
+                game.events.unshift({ year: game.career.year, text: `Signed a new contract with ${game.club.name}.` });
+            } else {
+                game.events.unshift({ year: game.career.year, text: `Signed for ${offer.club.name} for ${formatMoney(offer.fee)}.` });
+            }
+            
+            game.club = offer.club;
+            game.player.wage = offer.wage;
+            game.player.contractExp = game.career.year + offer.length;
+            game.player.role = offer.role;
+            game.transfers.offers = []; // Clear offers
+            
+            saveGame();
+            updateUI();
+            
+            // Switch to club view
+            document.querySelector('[data-target="club"]').click();
+        }
+
+        function getSegregatedTrophies() {
+            let cats = { intl: [], cont: [], league: [], cup: [] };
+            game.career.trophies.forEach(t => {
+                if (t.includes('World Cup') || t.includes('Continental Cup') || t.includes('Winner (')) cats.intl.push(t);
+                else if (t.includes('Champions League')) cats.cont.push(t);
+                else if (t.includes('Champion')) cats.league.push(t);
+                else cats.cup.push(t);
+            });
+            return cats;
+        }
+
+        function getSegregatedAwards() {
+            let cats = { ballon: [], fifa: [], yashin: [], golden: [] };
+            game.career.awards.forEach(a => {
+                if (a.includes("Ballon d'Or")) cats.ballon.push(a);
+                else if (a.includes("FIFA Best")) cats.fifa.push(a);
+                else if (a.includes("Yashin Trophy")) cats.yashin.push(a);
+                else if (a.includes("Golden Boot")) cats.golden.push(a);
+            });
+            return cats;
+        }
+
+        function buildTrophyHTML(title, list, colorClass) {
+            if(list.length === 0) return `<div><h4 class="font-bold text-sm ${colorClass} mb-2 border-b border-slate-700 pb-1">${title}</h4><p class="text-xs text-slate-500 italic">None</p></div>`;
+            return `<div><h4 class="font-bold text-sm ${colorClass} mb-2 border-b border-slate-700 pb-1">${title}</h4><ul class="space-y-1 text-xs text-slate-300">${list.map(t=>`<li><i class="fa-solid fa-check text-[10px] mr-1 opacity-50"></i>${t}</li>`).join('')}</ul></div>`;
+        }
+
+        function updateUI() {
+            // Sidebar / Header - Add safety fallbacks to prevent errors if name inputs get weirdly parsed
+            const fname = game.player.firstName || "Player";
+            const lname = game.player.lastName || "Name";
+            const initials = (fname[0] || "") + (lname[0] || "");
+            const fullName = `${fname} ${lname}`;
+            
+            document.getElementById('sb-avatar').innerText = initials;
+            document.getElementById('sb-name').innerText = fullName;
+            document.getElementById('sb-ovr').innerHTML = `OVR: ${game.player.ovr} | <span class="text-white">${game.player.pos}</span>`;
+            document.getElementById('sb-season-year').innerText = `Season ${game.career.year-1}/${game.career.year.toString().slice(2)}`;
+
+            document.getElementById('mob-avatar').innerText = initials;
+            document.getElementById('mob-name').innerText = fullName;
+            document.getElementById('mob-ovr').innerText = `OVR: ${game.player.ovr} | ${game.player.pos}`;
+
+            // Dashboard
+            document.getElementById('dash-club').innerText = game.club.name;
+            document.getElementById('dash-role').innerText = game.player.role;
+            document.getElementById('dash-value').innerText = formatMoney(game.player.value);
+            document.getElementById('dash-wage').innerText = formatMoney(game.player.wage) + '/w';
+            document.getElementById('dash-age').innerText = `${game.player.age} yrs`;
+            document.getElementById('dash-pot').innerText = `${game.player.ovr >= game.player.pot ? 'Reached' : game.player.pot}`;
+            
+            // Last stats
+            let lastStatsHTML = '';
+            if (game.career.history.length > 0) {
+                let last = game.career.history[game.career.history.length - 1];
+                lastStatsHTML = `
+                    <div class="bg-slate-800 p-3 rounded-lg"><p class="text-xs text-slate-400">Club Apps</p><p class="text-xl font-bold">${last.apps}</p></div>
+                    <div class="bg-slate-800 p-3 rounded-lg"><p class="text-xs text-slate-400">Club Goals</p><p class="text-xl font-bold">${last.goals}</p></div>
+                    <div class="bg-slate-800 p-3 rounded-lg"><p class="text-xs text-slate-400">Int'l Caps</p><p class="text-xl font-bold text-yellow-500">${last.intlApps || 0}</p></div>
+                    <div class="bg-slate-800 p-3 rounded-lg"><p class="text-xs text-slate-400">Avg Rtg</p><p class="text-xl font-bold">${last.avgRating.toFixed(1)}</p></div>
+                `;
+            } else {
+                lastStatsHTML = `<div class="col-span-2 text-slate-500 text-sm">No professional matches played yet.</div>`;
+            }
+            document.getElementById('dash-last-stats').innerHTML = lastStatsHTML;
+
+            // Events
+            let evHTML = game.events.slice(0, 4).map(e => `
+                <li class="flex items-start">
+                    <span class="text-blue-500 mr-3 mt-1"><i class="fa-solid fa-circle-dot text-xs"></i></span>
+                    <div><p class="text-sm">${e.text}</p><p class="text-xs text-slate-500">${e.year}</p></div>
+                </li>
+            `).join('');
+            document.getElementById('dash-events').innerHTML = evHTML;
+
+            // Profile
+            document.getElementById('prof-avatar').innerText = initials;
+            document.getElementById('prof-name').innerText = fullName;
+            document.getElementById('prof-nation-pos').innerHTML = `${game.player.nation} • ${game.player.pos} <br> <span class="text-xs text-yellow-500 font-bold"><i class="fa-solid fa-flag mt-2 mr-1"></i> Caps: ${game.career.totalIntlApps || 0} | Goals: ${game.career.totalIntlGoals || 0}</span>`;
+            document.getElementById('prof-ovr').innerText = game.player.ovr;
+            document.getElementById('prof-foot').innerText = game.player.foot;
+
+            // Attributes bars
+            let attrsHTML = '';
+            const colors = {
+                pace: 'bg-blue-500', shooting: 'bg-red-500', passing: 'bg-yellow-500', dribbling: 'bg-purple-500',
+                defending: 'bg-emerald-500', physical: 'bg-orange-500', vision: 'bg-teal-500', stamina: 'bg-pink-500'
+            };
+            Object.keys(game.player.attrs).forEach(k => {
+                let val = game.player.attrs[k];
+                attrsHTML += `
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300 capitalize">${k}</span>
+                            <span class="font-bold">${val}</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 border border-slate-700">
+                            <div class="${colors[k]} h-2 rounded-full stat-bar" style="width: ${val}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('attributes-container').innerHTML = attrsHTML;
+
+            // Club
+            document.getElementById('club-name').innerText = game.club.name;
+            document.getElementById('club-league').innerText = game.club.league;
+            document.getElementById('club-strength').innerText = game.club.strength;
+            document.getElementById('club-rep').innerText = game.club.rep;
+            document.getElementById('club-role').innerText = game.player.role;
+            document.getElementById('club-contract').innerText = game.club.isYouth ? 'Youth' : game.player.contractExp;
+
+            // History
+            let avgR = game.career.seasonsPlayed > 0 ? (game.career.avgRatingSum / game.career.seasonsPlayed).toFixed(2) : '0.00';
+            document.getElementById('history-totals').innerHTML = `
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 text-center"><p class="text-slate-400 text-xs">Matches</p><p class="text-2xl font-bold">${game.career.totalApps}</p></div>
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 text-center"><p class="text-slate-400 text-xs">Goals</p><p class="text-2xl font-bold">${game.career.totalGoals}</p></div>
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 text-center"><p class="text-slate-400 text-xs">Assists</p><p class="text-2xl font-bold">${game.career.totalAssists}</p></div>
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 text-center border-b-4 border-b-yellow-500"><p class="text-slate-400 text-xs">Int'l Caps</p><p class="text-2xl font-bold">${game.career.totalIntlApps || 0}</p></div>
+            `;
+
+            let histHTML = game.career.history.slice().reverse().map(h => `
+                <tr class="hover:bg-slate-800/50 transition">
+                    <td class="px-4 py-3 font-medium text-slate-300">${h.season}</td>
+                    <td class="px-4 py-3">${h.clubName}</td>
+                    <td class="px-4 py-3 text-center">${h.age}</td>
+                    <td class="px-4 py-3 text-center text-blue-400">${h.ovr}</td>
+                    <td class="px-4 py-3 text-center">${h.apps}</td>
+                    <td class="px-4 py-3 text-center">${h.goals}</td>
+                    <td class="px-4 py-3 text-center">${h.assists}</td>
+                    <td class="px-4 py-3 text-center">${h.cs}</td>
+                    <td class="px-4 py-3 text-center">${h.avgRating.toFixed(1)}</td>
+                </tr>
+            `).join('');
+            document.getElementById('history-table-body').innerHTML = histHTML;
+
+            // Transfers
+            let offHTML = '';
+            if(game.transfers.offers.length > 0) {
+                offHTML = game.transfers.offers.map(o => `
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-4 border-blue-500">
+                        <div>
+                            <p class="text-xs text-blue-400 font-bold uppercase tracking-wider mb-1">${o.type} Offer</p>
+                            <h3 class="font-bold text-xl">${o.club.name} <span class="text-slate-400 text-sm font-normal">(${o.club.league})</span></h3>
+                            <div class="flex flex-wrap gap-4 mt-2 text-sm text-slate-300">
+                                <span><i class="fa-solid fa-money-bill-wave text-emerald-500 w-4"></i> ${formatMoney(o.wage)}/w</span>
+                                <span><i class="fa-solid fa-file-contract text-slate-400 w-4"></i> ${o.length} Years</span>
+                                <span><i class="fa-solid fa-dumbbell text-orange-400 w-4"></i> STR: ${o.club.strength}</span>
+                                <span><i class="fa-solid fa-user-tag text-purple-400 w-4"></i> ${o.role}</span>
+                            </div>
+                        </div>
+                        <button onclick="acceptOffer('${o.id}')" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-lg transition shadow-lg">
+                            Accept Offer
+                        </button>
+                    </div>
+                `).join('');
+                document.getElementById('transfer-badge').classList.remove('hidden');
+            } else {
+                offHTML = `
+                    <div class="text-center py-12 glass-panel rounded-2xl">
+                        <i class="fa-solid fa-envelope-open text-4xl text-slate-600 mb-4"></i>
+                        <p class="text-slate-400">No transfer offers at the moment.</p>
+                        <p class="text-sm text-slate-500 mt-2">Offers usually arrive during the summer break after a season simulation.</p>
+                    </div>
+                `;
+            }
+            document.getElementById('offers-container').innerHTML = offHTML;
+
+            // Trophies - Segregated
+            const segTrophies = getSegregatedTrophies();
+            document.getElementById('trophies-container').innerHTML = `
+                ${buildTrophyHTML("International", segTrophies.intl, "text-yellow-400")}
+                ${buildTrophyHTML("European", segTrophies.cont, "text-blue-400")}
+                ${buildTrophyHTML("Domestic League", segTrophies.league, "text-emerald-400")}
+                ${buildTrophyHTML("Domestic Cup", segTrophies.cup, "text-orange-400")}
+            `;
+
+            // Awards - Segregated
+            const segAwards = getSegregatedAwards();
+            document.getElementById('awards-container').innerHTML = `
+                ${buildTrophyHTML("Ballon d'Or", segAwards.ballon, "text-yellow-500")}
+                ${buildTrophyHTML("FIFA Best Player", segAwards.fifa, "text-emerald-400")}
+                ${buildTrophyHTML("Yashin Trophy", segAwards.yashin, "text-blue-400")}
+                ${buildTrophyHTML("Golden Boot", segAwards.golden, "text-orange-400")}
+            `;
+        }
+
+        function showSeasonSummary(stats, honors, ovrDiff) {
+            document.getElementById('sum-title').innerText = "Season Complete";
+            document.getElementById('sum-subtitle').innerText = `Season ${stats.season} | ${stats.clubName}`;
+            
+            document.getElementById('sum-stats').innerHTML = `
+                <div><p class="text-xl font-black text-white">${stats.apps}</p><p class="text-[10px] text-slate-400">APPS</p></div>
+                <div><p class="text-xl font-black text-white">${stats.goals}</p><p class="text-[10px] text-slate-400">GOALS</p></div>
+                <div><p class="text-xl font-black text-white">${stats.assists}</p><p class="text-[10px] text-slate-400">ASSISTS</p></div>
+                <div><p class="text-xl font-black text-yellow-400">${stats.intlApps || 0}</p><p class="text-[10px] text-slate-400">INT'L CAPS</p></div>
+            `;
+
+            document.getElementById('sum-honors').innerHTML = honors.map(h => `<li class="flex items-center"><i class="fa-solid fa-check text-emerald-500 mr-2 text-xs"></i> ${h}</li>`).join('');
+
+            let diffText = ovrDiff >= 0 ? `<span class="text-emerald-400 text-sm ml-2">+${ovrDiff}</span>` : `<span class="text-red-400 text-sm ml-2">${ovrDiff}</span>`;
+            
+            let potText = '';
+            if (game.player.lastPotChange) {
+                let pDiff = game.player.lastPotChange;
+                potText = pDiff > 0 ? `<span class="text-emerald-400 text-xs ml-2 font-bold bg-emerald-900/40 px-2 py-1 rounded">POT +${pDiff}</span>` : `<span class="text-red-400 text-xs ml-2 font-bold bg-red-900/40 px-2 py-1 rounded">POT ${pDiff}</span>`;
+            }
+
+            document.getElementById('sum-ovr').innerHTML = `OVR: ${game.player.ovr} ${diffText} ${potText}`;
+            document.getElementById('sum-age').innerText = game.player.age;
+
+            document.getElementById('summary-modal').classList.remove('hidden');
+        }
+
+        function showRetirement() {
+            switchScreen('main-layout');
+            showView('view-retirement');
+            
+            // Hide sidebar logic
+            document.querySelector('aside').classList.add('hidden');
+            document.querySelector('.md\\:hidden').classList.add('hidden'); // Mobile header
+            document.getElementById('content-area').classList.remove('pt-20', 'md:pt-8');
+            document.getElementById('content-area').classList.add('pt-0');
+
+            document.getElementById('retire-msg').innerText = `You have officially retired from professional football at the age of ${game.player.age}.`;
+            
+            document.getElementById('ret-apps').innerText = game.career.totalApps;
+            document.getElementById('ret-goals').innerText = game.career.totalGoals;
+            document.getElementById('ret-assists').innerText = game.career.totalAssists;
+            let bdors = game.career.awards.filter(a => a.includes("Ballon")).length;
+            
+            // Replaced bdors stat with intl caps in the 4 grid for better retirement snapshot
+            document.getElementById('ret-bdors').parentElement.innerHTML = `
+                <p class="text-slate-400 text-sm">International Caps</p>
+                <p class="text-2xl font-bold text-yellow-500">${game.career.totalIntlApps || 0}</p>
+            `;
+
+            let legacy = "Average Pro";
+            if(bdors > 3 || (game.career.totalIntlApps > 100 && bdors > 0)) legacy = "ALL-TIME GREAT";
+            document.getElementById('retire-legacy').innerText = legacy;
+
+            // Generate Full Career Summary
+            
+            // 1. Clubs History Compilation
+            let clubHistory = [];
+            let currentClub = "";
+            let startYear = "";
+            game.career.history.forEach(h => {
+                let seasonStart = h.season.split('/')[0];
+                if(h.clubName !== currentClub) {
+                    if(currentClub !== "") {
+                        clubHistory.push(`${currentClub} <span class="text-slate-500 float-right">${startYear} - ${seasonStart}</span>`);
+                    }
+                    currentClub = h.clubName;
+                    startYear = seasonStart;
+                }
+            });
+            if (currentClub !== "") {
+                clubHistory.push(`${currentClub} <span class="text-slate-500 float-right">${startYear} - ${game.career.year}</span>`);
+            }
+            document.getElementById('ret-clubs').innerHTML = clubHistory.map(c => `<li class="border-b border-slate-800 pb-2"><i class="fa-solid fa-shield-halved mr-2 text-slate-500"></i>${c}</li>`).join('');
+
+            // 2. Trophies Compilation - Segregated
+            const segTrophies = getSegregatedTrophies();
+            document.getElementById('ret-trophies-container').innerHTML = `
+                ${buildTrophyHTML("International", segTrophies.intl, "text-yellow-400")}
+                ${buildTrophyHTML("European", segTrophies.cont, "text-blue-400")}
+                ${buildTrophyHTML("Domestic League", segTrophies.league, "text-emerald-400")}
+                ${buildTrophyHTML("Domestic Cup", segTrophies.cup, "text-orange-400")}
+            `;
+
+            // 3. Awards Compilation - Segregated
+            const segAwards = getSegregatedAwards();
+            document.getElementById('ret-awards-container').innerHTML = `
+                ${buildTrophyHTML("Ballon d'Or", segAwards.ballon, "text-yellow-500")}
+                ${buildTrophyHTML("FIFA Best Player", segAwards.fifa, "text-emerald-400")}
+                ${buildTrophyHTML("Yashin Trophy", segAwards.yashin, "text-blue-400")}
+                ${buildTrophyHTML("Golden Boot", segAwards.golden, "text-orange-400")}
+            `;
+        }
+
+        function downloadCareerSummary() {
+            let fname = game.player.firstName || "Player";
+            let lname = game.player.lastName || "Name";
+            let fullName = `${fname} ${lname}`;
+            let legacy = document.getElementById('retire-legacy').innerText;
+            
+            let content = `=========================================\n`;
+            content += `CAREER SUMMARY: ${fullName}\n`;
+            content += `Legacy: ${legacy}\n`;
+            content += `Retired at Age: ${game.player.age}\n`;
+            content += `=========================================\n\n`;
+            
+            content += `--- OVERALL STATS ---\n`;
+            content += `Club Matches: ${game.career.totalApps}\n`;
+            content += `Club Goals: ${game.career.totalGoals}\n`;
+            content += `Club Assists: ${game.career.totalAssists}\n`;
+            content += `International Caps: ${game.career.totalIntlApps || 0}\n`;
+            content += `International Goals: ${game.career.totalIntlGoals || 0}\n\n`;
+            
+            content += `--- CLUBS REPRESENTED ---\n`;
+            let currentClub = "";
+            let startYear = "";
+            game.career.history.forEach(h => {
+                let seasonStart = h.season.split('/')[0];
+                if(h.clubName !== currentClub) {
+                    if(currentClub !== "") {
+                        content += `- ${currentClub} (${startYear} - ${seasonStart})\n`;
+                    }
+                    currentClub = h.clubName;
+                    startYear = seasonStart;
+                }
+            });
+            if (currentClub !== "") {
+                content += `- ${currentClub} (${startYear} - ${game.career.year})\n`;
+            }
+            content += `\n`;
+            
+            content += `--- MAJOR TROPHIES ---\n`;
+            if (game.career.trophies.length > 0) {
+                const segTrophies = getSegregatedTrophies();
+                if(segTrophies.intl.length) { content += `[International]\n`; segTrophies.intl.forEach(t => content += `  - ${t}\n`); }
+                if(segTrophies.cont.length) { content += `[European]\n`; segTrophies.cont.forEach(t => content += `  - ${t}\n`); }
+                if(segTrophies.league.length) { content += `[Domestic League]\n`; segTrophies.league.forEach(t => content += `  - ${t}\n`); }
+                if(segTrophies.cup.length) { content += `[Domestic Cup]\n`; segTrophies.cup.forEach(t => content += `  - ${t}\n`); }
+            } else {
+                content += `None\n`;
+            }
+            content += `\n`;
+            
+            content += `--- INDIVIDUAL AWARDS ---\n`;
+            if (game.career.awards.length > 0) {
+                const segAwards = getSegregatedAwards();
+                if(segAwards.ballon.length) { content += `[Ballon d'Or]\n`; segAwards.ballon.forEach(a => content += `  - ${a}\n`); }
+                if(segAwards.fifa.length) { content += `[FIFA Best Player]\n`; segAwards.fifa.forEach(a => content += `  - ${a}\n`); }
+                if(segAwards.yashin.length) { content += `[Yashin Trophy]\n`; segAwards.yashin.forEach(a => content += `  - ${a}\n`); }
+                if(segAwards.golden.length) { content += `[Golden Boot]\n`; segAwards.golden.forEach(a => content += `  - ${a}\n`); }
+            } else {
+                content += `None\n`;
+            }
+            content += `\n=========================================\n`;
+            content += `Generated by Football Manager Pro Simulator\n`;
+            
+            // Trigger text file download
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fname}_${lname}_Career_Summary.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function saveGame() {
+            localStorage.setItem('careerSimSave', JSON.stringify(game));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('careerSimSave');
+            if (saved) {
+                game = JSON.parse(saved);
+                
+                // Re-link club object to reference if possible, though JSON parsing keeps data intact
+                if(game.career.isRetired) {
+                    showRetirement();
+                } else {
+                    startGameUI();
+                }
+            }
+        }
+
+        // Init on load
+        window.onload = init;
+
+    </script>
+</body>
+</html>
