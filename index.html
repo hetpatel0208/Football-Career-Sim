@@ -747,19 +747,19 @@
                 age: 15, ovr: 55, pot: 85, lastPotChange: 0,
                 attrs: { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50, vision: 50, stamina: 50 },
                 value: 500000, wage: 500, contractExp: 2026, role: 'Youth Prospect',
-                trainingFocus: 'balanced', playstyle: 'normal' // New features
+                trainingFocus: 'balanced', playstyle: 'normal'
             },
             club: null,
             career: {
                 year: 2024, isRetired: false,
                 totalApps: 0, totalGoals: 0, totalAssists: 0, totalCS: 0, avgRatingSum: 0, seasonsPlayed: 0,
                 totalIntlApps: 0, totalIntlGoals: 0, 
-                history: [], // array of season stat objects
-                trophies: [], // array of string
-                awards: [] // array of string
+                history: [], 
+                trophies: [], 
+                awards: [] 
             },
             transfers: { offers: [] },
-            events: [] // recent news
+            events: [] 
         };
 
         // --- CORE FUNCTIONS ---
@@ -1559,7 +1559,7 @@
         function updateUI() {
             // Sync UI inputs with game state
             // Ensure if an old save has a legacy focus, it falls back visually so the UI doesn't break
-            let validFocuses = ['balanced', 'poacher', 'target_man', 'playmaker', 'winger', 'b2b', 'stopper', 'bpd', 'gk_traditional', 'gk_sweeper'];
+            let validFocuses = ['balanced', 'poacher', 'target_man', 'playmaker', 'winger', 'b2b', 'stopper', 'bpd', 'gk_traditional', 'gk_sweeper', 'attacking', 'defending', 'athletic'];
             document.getElementById('dash-training').value = validFocuses.includes(game.player.trainingFocus) ? game.player.trainingFocus : 'balanced';
             document.getElementById('dash-playstyle').value = game.player.playstyle || 'normal';
 
