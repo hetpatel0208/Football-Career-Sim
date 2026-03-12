@@ -211,7 +211,7 @@
             <div id="view-dashboard" class="view-section block">
                 <h2 class="text-2xl font-bold mb-6">Overview</h2>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <!-- Status Card -->
                     <div class="glass-panel p-6 rounded-2xl flex items-center space-x-4">
                         <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-2xl border-2 border-slate-600" id="dash-club-logo">
@@ -243,6 +243,47 @@
                             <p class="text-sm text-slate-400">Age & Potential</p>
                             <h3 class="font-bold text-2xl" id="dash-age">15 yrs</h3>
                             <p class="text-sm text-slate-400">Potential: <span id="dash-pot" class="text-white font-bold">85-94</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEASON DECISIONS PANEL (NEW) -->
+                <div class="glass-panel rounded-2xl p-6 mb-8 border-l-4 border-blue-500">
+                    <h3 class="font-bold text-lg mb-4 border-b border-slate-700 pb-2"><i class="fa-solid fa-sliders mr-2 text-slate-400"></i> Season Decisions</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-1">Development Plan (Training)</label>
+                            <p class="text-xs text-slate-500 mb-2">Target specific attributes for extra growth this season.</p>
+                            <select id="dash-training" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                                <option value="balanced">Balanced (All Stats)</option>
+                                <optgroup label="Attackers">
+                                    <option value="poacher">Poacher (Shooting, Pace)</option>
+                                    <option value="target_man">Target Man (Shooting, Physical)</option>
+                                </optgroup>
+                                <optgroup label="Midfielders & Wingers">
+                                    <option value="playmaker">Playmaker (Passing, Vision, Dribbling)</option>
+                                    <option value="winger">Winger (Pace, Dribbling, Passing)</option>
+                                    <option value="b2b">Box-to-Box (Stamina, Passing, Defending)</option>
+                                </optgroup>
+                                <optgroup label="Defenders">
+                                    <option value="stopper">Stopper (Defending, Physical)</option>
+                                    <option value="bpd">Ball-Playing Def (Defending, Passing, Vision)</option>
+                                </optgroup>
+                                <optgroup label="Goalkeepers">
+                                    <option value="gk_traditional">Traditional GK (Defending/GK, Physical)</option>
+                                    <option value="gk_sweeper">Sweeper Keeper (Defending/GK, Passing, Vision)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-1">Playstyle</label>
+                            <p class="text-xs text-slate-500 mb-2">Changes match simulation behavior & stats.</p>
+                            <select id="dash-playstyle" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                                <option value="normal">Normal</option>
+                                <option value="selfish">Selfish (More Goals, Less Assists)</option>
+                                <option value="team">Team Player (More Assists, Less Goals)</option>
+                                <option value="aggressive">Aggressive (Better Ratings, Higher Injury Risk)</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -439,7 +480,7 @@
                                 <p class="text-2xl font-bold text-white" id="ret-assists">0</p>
                             </div>
                             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                                <p class="text-slate-400 text-sm">Ballon d'Ors</p>
+                                <p class="text-slate-400 text-sm">International Caps</p>
                                 <p class="text-2xl font-bold text-yellow-500" id="ret-bdors">0</p>
                             </div>
                         </div>
@@ -530,14 +571,19 @@
                 </div>
 
                 <!-- Development -->
-                <div class="bg-slate-800 rounded-xl p-4 border border-slate-700 flex justify-between items-center">
-                    <div>
-                        <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider">Attribute Growth</h3>
-                        <p class="text-xl font-bold text-white mt-1" id="sum-ovr">OVR: 75 <span class="text-emerald-400 text-sm ml-2">+2</span> <span id="sum-pot-change"></span></p>
+                <div class="bg-slate-800 rounded-xl p-4 border border-slate-700">
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-3">
+                        <div>
+                            <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider">Attribute Growth</h3>
+                            <p class="text-xl font-bold text-white mt-1" id="sum-ovr">OVR: 75 <span class="text-emerald-400 text-sm ml-2">+2</span> <span id="sum-pot-change"></span></p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-slate-400">Current Age</p>
+                            <p class="font-bold" id="sum-age">16</p>
+                        </div>
                     </div>
-                    <div class="text-right">
-                        <p class="text-xs text-slate-400">Current Age</p>
-                        <p class="font-bold" id="sum-age">16</p>
+                    <div id="sum-attr-changes" class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <!-- JS -->
                     </div>
                 </div>
             </div>
@@ -561,9 +607,15 @@
             { id: 'acad_rma', name: 'Real Madrid Academy', league: 'Youth League', strength: 65, finance: 90, rep: 60, isYouth: true },
             { id: 'acad_fcb', name: 'Barcelona La Masia', league: 'Youth League', strength: 65, finance: 85, rep: 60, isYouth: true },
             { id: 'acad_mun', name: 'Man Utd Academy', league: 'Youth League', strength: 63, finance: 90, rep: 58, isYouth: true },
+            { id: 'acad_mci', name: 'Man City Academy', league: 'Youth League', strength: 66, finance: 95, rep: 62, isYouth: true },
+            { id: 'acad_liv', name: 'Liverpool Academy', league: 'Youth League', strength: 65, finance: 90, rep: 61, isYouth: true },
+            { id: 'acad_ars', name: 'Arsenal Hale End', league: 'Youth League', strength: 65, finance: 85, rep: 61, isYouth: true },
             { id: 'acad_che', name: 'Chelsea Academy', league: 'Youth League', strength: 64, finance: 90, rep: 60, isYouth: true },
             { id: 'acad_bay', name: 'Bayern Campus', league: 'Youth League', strength: 66, finance: 90, rep: 63, isYouth: true },
+            { id: 'acad_atm', name: 'Atletico Youth', league: 'Youth League', strength: 64, finance: 80, rep: 60, isYouth: true },
             { id: 'acad_psg', name: 'PSG Academy', league: 'Youth League', strength: 65, finance: 95, rep: 61, isYouth: true },
+            { id: 'acad_int', name: 'Inter Primavera', league: 'Youth League', strength: 64, finance: 80, rep: 60, isYouth: true },
+            { id: 'acad_mil', name: 'AC Milan Primavera', league: 'Youth League', strength: 64, finance: 80, rep: 60, isYouth: true },
             { id: 'acad_juv', name: 'Juventus Youth', league: 'Youth League', strength: 64, finance: 80, rep: 60, isYouth: true },
             { id: 'acad_ajx', name: 'Ajax Youth', league: 'Youth League', strength: 68, finance: 70, rep: 65, isYouth: true },
             { id: 'acad_bvb', name: 'Dortmund Academy', league: 'Youth League', strength: 66, finance: 75, rep: 62, isYouth: true },
@@ -694,13 +746,14 @@
                 firstName: '', lastName: '', nation: '', foot: '', pos: '',
                 age: 15, ovr: 55, pot: 85, lastPotChange: 0,
                 attrs: { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50, vision: 50, stamina: 50 },
-                value: 500000, wage: 500, contractExp: 2026, role: 'Youth Prospect'
+                value: 500000, wage: 500, contractExp: 2026, role: 'Youth Prospect',
+                trainingFocus: 'balanced', playstyle: 'normal' // New features
             },
             club: null,
             career: {
                 year: 2024, isRetired: false,
                 totalApps: 0, totalGoals: 0, totalAssists: 0, totalCS: 0, avgRatingSum: 0, seasonsPlayed: 0,
-                totalIntlApps: 0, totalIntlGoals: 0, // NEW: Int'l tracking
+                totalIntlApps: 0, totalIntlGoals: 0, 
                 history: [], // array of season stat objects
                 trophies: [], // array of string
                 awards: [] // array of string
@@ -787,6 +840,16 @@
             });
 
             document.getElementById('btn-download-summary').addEventListener('click', downloadCareerSummary);
+
+            // Interactive Decisions Listeners
+            document.getElementById('dash-training').addEventListener('change', (e) => {
+                game.player.trainingFocus = e.target.value;
+                saveGame();
+            });
+            document.getElementById('dash-playstyle').addEventListener('change', (e) => {
+                game.player.playstyle = e.target.value;
+                saveGame();
+            });
         }
 
         // Must define startGameUI BEFORE it's called
@@ -854,6 +917,8 @@
             game.player.nation = document.getElementById('cp-nation').value;
             game.player.foot = document.getElementById('cp-foot').value;
             game.player.pos = document.getElementById('cp-pos').value;
+            game.player.trainingFocus = 'balanced';
+            game.player.playstyle = 'normal';
             
             // Base attributes Generation
             game.player.age = 15;
@@ -950,7 +1015,7 @@
                 // 1. Age and Growth
                 game.player.age++;
                 game.career.year++;
-                growPlayer();
+                let attrChanges = growPlayer();
                 calculateOVR();
                 calculateValue();
 
@@ -1009,7 +1074,7 @@
                 if(game.career.isRetired) {
                     showRetirement();
                 } else {
-                    showSeasonSummary(seasonStats, honors, game.player.ovr - oldOvr);
+                    showSeasonSummary(seasonStats, honors, game.player.ovr - oldOvr, attrChanges);
                 }
 
             }, 1500); // Fake delay for UX
@@ -1062,13 +1127,36 @@
                 baseGrowth = rInt(-3, -1);
             }
 
+            let attrChanges = {};
+            let focus = game.player.trainingFocus || 'balanced';
+
             // Apply to attrs
             Object.keys(game.player.attrs).forEach(k => {
+                let oldVal = game.player.attrs[k];
                 let mod = baseGrowth;
                 
-                // Add a tiny variance so stats don't all look identical, but ensure it averages positively
-                if (baseGrowth > 0) mod += (Math.random() > 0.4 ? 1 : 0); // Boosted variance slightly so secondary stats catch up faster
-                else if (baseGrowth < 0) mod += (Math.random() > 0.5 ? -1 : 0);
+                if (baseGrowth > 0) {
+                    mod += (Math.random() > 0.4 ? 1 : 0); // Variance
+                    
+                    // Apply Specific Development Plan bonuses
+                    if (focus === 'poacher' && ['shooting', 'pace'].includes(k)) mod += (Math.random() > 0.4 ? 1 : 0);
+                    if (focus === 'target_man' && ['shooting', 'physical'].includes(k)) mod += (Math.random() > 0.4 ? 1 : 0);
+                    if (focus === 'playmaker' && ['passing', 'vision', 'dribbling'].includes(k)) mod += (Math.random() > 0.5 ? 1 : 0);
+                    if (focus === 'winger' && ['pace', 'dribbling', 'passing'].includes(k)) mod += (Math.random() > 0.5 ? 1 : 0);
+                    if (focus === 'b2b' && ['stamina', 'passing', 'defending'].includes(k)) mod += (Math.random() > 0.5 ? 1 : 0);
+                    if (focus === 'stopper' && ['defending', 'physical'].includes(k)) mod += (Math.random() > 0.4 ? 1 : 0);
+                    if (focus === 'bpd' && ['defending', 'passing', 'vision'].includes(k)) mod += (Math.random() > 0.5 ? 1 : 0);
+                    if (focus === 'gk_traditional' && ['defending', 'physical'].includes(k)) mod += (Math.random() > 0.4 ? 1 : 0);
+                    if (focus === 'gk_sweeper' && ['defending', 'passing', 'vision'].includes(k)) mod += (Math.random() > 0.5 ? 1 : 0);
+                    
+                    // Legacy support just in case
+                    if (focus === 'attacking' && ['shooting', 'passing', 'dribbling', 'vision'].includes(k)) mod += (Math.random() > 0.5 ? 1 : 0);
+                    if (focus === 'defending' && ['defending', 'physical'].includes(k)) mod += (Math.random() > 0.5 ? 1 : 0);
+                    if (focus === 'athletic' && ['pace', 'stamina'].includes(k)) mod += (Math.random() > 0.5 ? 1 : 0);
+                    
+                } else if (baseGrowth < 0) {
+                    mod += (Math.random() > 0.5 ? -1 : 0);
+                }
                 
                 // Absolutely NO DECLINE before age 32
                 if (age < 32 && mod < 0) mod = 0;
@@ -1078,7 +1166,13 @@
                 // Hard limits
                 if (game.player.attrs[k] > 99) game.player.attrs[k] = 99;
                 if (game.player.attrs[k] < 1) game.player.attrs[k] = 1;
+                
+                // Track exact changes for UI
+                let diff = game.player.attrs[k] - oldVal;
+                if (diff !== 0) attrChanges[k] = diff;
             });
+            
+            return attrChanges;
         }
 
         function generateMatchStats() {
@@ -1086,6 +1180,7 @@
             const ovr = game.player.ovr;
             const clubStrength = game.club.strength;
             const isYouth = game.club.isYouth;
+            const style = game.player.playstyle || 'normal';
 
             let maxApps = isYouth ? 30 : 50;
             let apps = 0;
@@ -1104,8 +1199,10 @@
                 else { apps = rInt(0, 5); game.player.role = (game.player.age >= 32) ? "Veteran" : (game.player.age <= 23 ? "Prospect" : "Reserve"); }
             }
 
-            // Injury & Narrative System
+            // Injury & Narrative System (Affected by Playstyle)
             let injuryRoll = rInt(1, 100);
+            if (style === 'aggressive') injuryRoll += 15; // Aggressive playstyle increases injury risk
+            
             let gamesMissed = 0;
             let narrative = "Played a solid, injury-free season.";
             
@@ -1160,11 +1257,21 @@
                 } else if (pos === 'GK') {
                     cs = Math.round(apps * 0.4 * formMult * (clubStrength/80));
                 }
+                
+                // Apply Playstyle Modifiers
+                if (style === 'selfish') {
+                    goals = Math.round(goals * 1.3);
+                    assists = Math.round(assists * 0.5);
+                } else if (style === 'team') {
+                    goals = Math.round(goals * 0.7);
+                    assists = Math.round(assists * 1.4);
+                }
 
                 // Avg Rating math
                 let baseRating = 6.0;
                 let statBonus = ((goals * 2) + (assists * 1) + (cs * 1.5)) / apps;
                 rating = Math.min(10, Math.max(5.0, baseRating + statBonus + ((ovr-70)/20) + (rInt(-5,5)/10)));
+                if (style === 'aggressive') rating = Math.min(10, rating + 0.3); // Bonus rating for aggression
                 rating = Math.round(rating * 10) / 10;
             }
             
@@ -1211,7 +1318,8 @@
             let leagueWinProb = (str - 75) * 5; // e.g. str 90 = 75%
             if(rInt(1, 100) <= leagueWinProb) {
                 honors.push(`${game.club.league} Champion`);
-                game.career.trophies.unshift(`${game.career.year}: ${game.club.league}`);
+                // FIX: explicitly append "Champion" to fix the segregating bug
+                game.career.trophies.unshift(`${game.career.year}: ${game.club.league} Champion`);
             }
 
             // Cup
@@ -1426,7 +1534,7 @@
             game.career.trophies.forEach(t => {
                 if (t.includes('World Cup') || t.includes('Continental Cup') || t.includes('Winner (')) cats.intl.push(t);
                 else if (t.includes('Champions League')) cats.cont.push(t);
-                else if (t.includes('Champion')) cats.league.push(t);
+                else if (t.includes('Champion')) cats.league.push(t); // Now correctly grabs leagues because we added 'Champion'
                 else cats.cup.push(t);
             });
             return cats;
@@ -1449,7 +1557,13 @@
         }
 
         function updateUI() {
-            // Sidebar / Header - Add safety fallbacks to prevent errors if name inputs get weirdly parsed
+            // Sync UI inputs with game state
+            // Ensure if an old save has a legacy focus, it falls back visually so the UI doesn't break
+            let validFocuses = ['balanced', 'poacher', 'target_man', 'playmaker', 'winger', 'b2b', 'stopper', 'bpd', 'gk_traditional', 'gk_sweeper'];
+            document.getElementById('dash-training').value = validFocuses.includes(game.player.trainingFocus) ? game.player.trainingFocus : 'balanced';
+            document.getElementById('dash-playstyle').value = game.player.playstyle || 'normal';
+
+            // Sidebar / Header
             const fname = game.player.firstName || "Player";
             const lname = game.player.lastName || "Name";
             const initials = (fname[0] || "") + (lname[0] || "");
@@ -1608,7 +1722,7 @@
             `;
         }
 
-        function showSeasonSummary(stats, honors, ovrDiff) {
+        function showSeasonSummary(stats, honors, ovrDiff, attrChanges) {
             document.getElementById('sum-title').innerText = "Season Complete";
             document.getElementById('sum-subtitle').innerText = `Season ${stats.season} | ${stats.clubName}`;
             
@@ -1631,6 +1745,18 @@
 
             document.getElementById('sum-ovr').innerHTML = `OVR: ${game.player.ovr} ${diffText} ${potText}`;
             document.getElementById('sum-age').innerText = game.player.age;
+
+            // Generate detailed attribute changes HTML
+            let changesHTML = Object.keys(attrChanges).map(k => {
+                let val = attrChanges[k];
+                let color = val > 0 ? 'text-emerald-400' : 'text-red-400';
+                let sign = val > 0 ? '+' : '';
+                return `<div class="bg-slate-900/50 p-2 rounded border border-slate-700 text-xs capitalize flex justify-between items-center"><span class="text-slate-300">${k}</span> <span class="font-bold ${color}">${sign}${val}</span></div>`;
+            }).join('');
+            
+            if(changesHTML === '') changesHTML = '<div class="text-xs text-slate-500 col-span-full italic">No significant attribute changes this season.</div>';
+
+            document.getElementById('sum-attr-changes').innerHTML = changesHTML;
 
             document.getElementById('summary-modal').classList.remove('hidden');
         }
@@ -1660,6 +1786,11 @@
 
             let legacy = "Average Pro";
             if(bdors > 3 || (game.career.totalIntlApps > 100 && bdors > 0)) legacy = "ALL-TIME GREAT";
+            else if(bdors > 0 || game.career.totalGoals > 300 || game.player.ovr >= 90) legacy = "LEGEND";
+            else if(game.career.totalApps > 400 || game.player.ovr >= 85) legacy = "GREAT PLAYER";
+            else if(game.career.totalApps > 150) legacy = "SOLID PRO";
+            else legacy = "FORGOTTEN PROSPECT";
+
             document.getElementById('retire-legacy').innerText = legacy;
 
             // Generate Full Career Summary
